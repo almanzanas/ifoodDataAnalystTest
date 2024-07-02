@@ -1,0 +1,33 @@
+El Z-Score es una medida estadística que describe la posición de una puntuación
+bruta en relación con la media de un grupo de puntuaciones. Un Z-Score de 0 indica 
+que la puntuación de los datos está en la media. Un Z-Score de 1.0 indica un valor 
+que es una desviación estándar desde la media. Aquí está la fórmula:
+
+Z=(X−μ)​/σ
+
+Donde:
+X es la puntuación bruta,
+μ es la media de la población,
+σ es la desviación estándar de la población.
+
+En general, un Z-Score de 3 se considera un valor atípico.
+El Rango Intercuartil (IQR) es una medida de dispersión estadística, siendo igual 
+al rango entre el primer cuartil (25%) y el tercer cuartil (75%). Los valores 
+atípicos en este caso suelen ser definidos como los valores que caen 
+por debajo de Q1 - 1.5IQR o por encima de Q3 + 1.5IQR.
+
+La Distancia de Mahalanobis es una medida de la distancia entre un punto P y 
+una distribución D, introducida por P. C. Mahalanobis en 1936. Es una medida 
+multi-dimensional que se utiliza para identificar valores atípicos. 
+La Distancia de Mahalanobis se utiliza para identificar valores atípicos 
+en conjuntos de datos multivariados. Es útilmente aplicada cuando se necesita 
+entender cómo un punto particular se diferencia del conjunto de puntos, 
+en términos de todas las variables disponibles.
+
+Por lo tanto, Z-Score, IQR y la Distancia de Mahalanobis son técnicas 
+diferentes que puedes usar para identificar valores atípicos, dependiendo 
+de tus necesidades y del tipo de datos con los que estés trabajando. Cada uno 
+tiene sus propias fortalezas y debilidades, y puede ser más apropiado en 
+diferentes situaciones. Por ejemplo, Z-Score y IQR son más útiles para datos 
+univariados, mientras que la Distancia de Mahalanobis es útil para datos multivariados.
+
