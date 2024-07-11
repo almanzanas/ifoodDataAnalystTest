@@ -1,0 +1,27 @@
+# Scatter plot style
+# Set x axis
+xtick.minor.visible : True
+xtick.top : True
+xtick.direction : in
+xtick.major.size : 4
+xtick.major.width : 1
+xtick.minor.size : 2
+xtick.minor.width : 1
+
+# Set y axis
+ytick.minor.visible : True
+ytick.right : True
+ytick.direction : in
+ytick.major.size : 4
+ytick.major.width : 1
+ytick.minor.size : 2 
+ytick.minor.width : 1
+
+# Set line widths
+axes.grid : True
+grid.color : black
+axes.axisbelow : True
+axes.linewidth : 0.5
+grid.linewidth : 0.5
+grid.alpha : 0.3
+lines.linewidth : 1.
