@@ -1,0 +1,45 @@
+---
+title: "Analysis Report"
+author: "Alvaro Manzanas"
+date: "2024-07-21"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+editor_options: 
+  markdown: 
+    wrap: 79
+---
+
+# iFood - Data Analyst Test {.unnumbered}
+
+# Objectives
+
+*Build an analysis to address the highest profit for the next direct marketing*
+*campaign (sixth) which aims at selling a new gadget. Pilot campaign:*
+
+-   2240 customers
+-   Cost of the sample campaign: 6.720MU (Millions of Euros)
+-   Revenue generated: 3.674MU
+-   Global profit:
+-   3.046MU
+-   Success: 15%
+
+*Develop a model that predicts customer behavior and to apply it to the rest*
+*of the customer base.*
+
+-   Cherry pick the customers that are most likely to purchase the offer.
+-   Leaving out the non-respondents.
+-   Characteristic features of those customers who are willing to buy the
+    gadget.
+
+# Data Cleaning
+
+```{python}
+print("Example execution block")
+```
+
+``` python
+# python example code block
+```
