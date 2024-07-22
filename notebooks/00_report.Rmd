@@ -3,14 +3,35 @@ title: "Analysis Report"
 author: "Alvaro Manzanas"
 date: "2024-07-21"
 output:
-  html_document:
-    toc: true
-    toc_float: true
-    theme: flatly
+  rmdformats::html_clean:
+    code_folding: show
+    self_contained: true
+    thumbnails: false
+    lightbox: true
+    highlight: breezedark
+    use_bookdown: true
+pkgdown:
+  as_is: true
 editor_options: 
   markdown: 
     wrap: 79
 ---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(rmdformats)
+library(reticulate)
+
+## Global options
+options(max.print = "79")
+knitr::opts_chunk$set(
+  echo = TRUE, cache = FALSE, prompt = FALSE,
+  tidy = FALSE, comment = NA,
+  message = FALSE, warning = FALSE
+)
+opts_knit$set(width = 79)
+reticulate::use_python("U:/Users/alvar/miniforge3/envs/learning")
+```
 
 # iFood - Data Analyst Test {.unnumbered}
 
@@ -35,11 +56,3 @@ editor_options:
     gadget.
 
 # Data Cleaning
-
-```{python}
-print("Example execution block")
-```
-
-``` python
-# python example code block
-```
