@@ -44,9 +44,8 @@ Build an analysis to address the greatest benefit for the next direct marketing 
 - 2240 customers
 - Sample campaign cost: 6,720MU (million euros)
 - Revenue generated: 3,674MU
-- Overall profit:
-  - 3,046MU
-  - Success rate 15%. 
+- Overall profit: -3,046MU
+- Success rate 15%. 
 
 Develop a model that predicts customer behaviour and apply it to the rest of the customer base to the rest of the customer base.
 
