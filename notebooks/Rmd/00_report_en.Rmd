@@ -4,19 +4,26 @@ subtitle: "Analysis Report"
 author: "Alvaro Manzanas"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    fig_caption: true
+    number_sections: true
+    keep_tex: false
+    citation_package: natbib
   rmdformats::html_clean:
     code_folding: hide
     self_contained: true
     thumbnails: false
     lightbox: true
     highlight: breezedark
-    use_bookdown: true
 pkgdown:
   as_is: true
 editor_options: 
   markdown: 
     wrap: 79
 bibliography: references.bib
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
@@ -29,29 +36,32 @@ options(max.print = "79")
 knitr::opts_chunk$set(
   echo = TRUE, cache = FALSE, prompt = FALSE,
   tidy = FALSE, comment = NA,
-  message = FALSE, warning = FALSE
+  message = FALSE, warning = FALSE, fig.align = "center"
 )
 opts_knit$set(width = 79)
 reticulate::use_python("U:/Users/alvar/miniforge3/envs/learning")
-knitr::knit_engines$set(python = reticulate::eng_python)
+knitr::knit_engines$set(python.reticulate = FALSE)
 
 ```
 
 # Objectives {.unnumbered}
 
-Build an analysis to address the greatest benefit for the next direct marketing campaign (sixth) that aims to sell a new direct marketing campaign (sixth) that aims to sell a new gadget gadget. Pilot campaign:
+Build an analysis to address the greatest benefit for the next direct marketing
+campaign (sixth) that aims to sell a new direct marketing campaign (sixth) that
+aims to sell a new gadget gadget. Pilot campaign:
 
-- 2240 customers
-- Sample campaign cost: 6,720MU (million euros)
-- Revenue generated: 3,674MU
-- Overall profit: -3,046MU
-- Success rate 15%. 
+-   2240 customers
+-   Sample campaign cost: 6,720MU (million euros)
+-   Revenue generated: 3,674MU
+-   Overall profit: -3,046MU
+-   Success rate 15%.
 
-Develop a model that predicts customer behaviour and apply it to the rest of the customer base to the rest of the customer base.
+Develop a model that predicts customer behaviour and apply it to the rest of
+the customer base to the rest of the customer base.
 
-- Select customers most likely to purchase the offer.
-- Exclude non-responders.
-- Characteristic traits of customers willing to buy the gadget.
+-   Select customers most likely to purchase the offer.
+-   Exclude non-responders.
+-   Characteristic traits of customers willing to buy the gadget.
 
 # Data Cleaning
 
@@ -68,7 +78,7 @@ from datetime import datetime
 from scipy import stats
 from scipy.stats import kstest
 from IPython.display import display
-
+from tabulate import tabulate
 
 import psutil
 import warnings
@@ -78,7 +88,7 @@ warnings.filterwarnings("ignore")
 plt.rcdefaults()
 
 # Storing path
-path = Path("../data/ifood_customers.csv")
+path = Path("../../data/ifood_customers.csv")
 
 # Read CSV with pandas
 data = pd.read_csv(path)
@@ -90,9 +100,9 @@ plt.style.use('seaborn-v0_8-colorblind')
 
 ```
 
-First of all, the cleaning of data that may interfere with the analysis 
-is started by checking the columns of the dataset and selecting those 
-whose type is ‘object’ in order to see their unique values.
+First of all, the cleaning of data that may interfere with the analysis is
+started by checking the columns of the dataset and selecting those whose type
+is ‘object’ in order to see their unique values.
 
 ```{python}
 # Exploring unique values in some columns
@@ -113,17 +123,15 @@ print("\n'Dt_Customer' Column sample:\n",
       )
 ```
 
-Once we know what these columns are made up of, the type of 
-column is changed to the appropriate format, this being 
-‘category’ or ‘datetime’. In addition, new columns are added
-to find out the age of the customers, how many days they have 
-been customers, whether they have made purchases in the last month, 
-the total amount they have spent, the total number of purchases, 
-the total number of campaigns accepted, and the total number 
-of children they have at home.
+Once we know what these columns are made up of, the type of column is changed
+to the appropriate format, this being ‘category’ or ‘datetime’. In addition,
+new columns are added to find out the age of the customers, how many days they
+have been customers, whether they have made purchases in the last month, the
+total amount they have spent, the total number of purchases, the total number
+of campaigns accepted, and the total number of children they have at home.
 
-Once these new columns have been found to be of interest for the 
-following analyses, they are reordered to make them easier to read.
+Once these new columns have been found to be of interest for the following
+analyses, they are reordered to make them easier to read.
 
 ```{python}
 
@@ -200,21 +208,22 @@ pop_column = data.pop("NumPurchasesTotal")
 data.insert(20, "NumPurchasesTotal", pop_column)
 
 data.info()
+
 ```
 
 ## Discarding client entries
 
 Customers who are deemed not to meet the inclusion criteria for further
-analysis will then be analysed and discarded. The exclusion criteria 
-will be: not having all fields completed and those clients who are 
-considered to be logically inconsistent in their answers.
+analysis will then be analysed and discarded. The exclusion criteria will be:
+not having all fields completed and those clients who are considered to be
+logically inconsistent in their answers.
 
-First, missing values will be detected and the corresponding rows will 
-be discarded. Then those clients who have answered in Marital Status 
-(which we checked earlier) with ‘Alone, Absurd, or Yolo’ will 
-be considered logically inconsistent.
+First, missing values will be detected and the corresponding rows will be
+discarded. Then those clients who have answered in Marital Status (which we
+checked earlier) with ‘Alone, Absurd, or Yolo’ will be considered logically
+inconsistent.
 
-```{python}
+```{python, class.source = "fold-show"}
 
 # Missing Values
 row_nan = data[data.isna().any(axis=1)]
@@ -225,37 +234,37 @@ marital_filt = data[data["Marital_Status"].isin(['Alone', 'Absurd', 'YOLO'])]
 data.drop(marital_filt.index, inplace=True)
 ```
 
-Next, outliers in the previously created variable of age and in ‘Income’ 
-will be identified. To do this, before starting the normality of both 
-variables will be checked with the Kolmogorov-Smirnov test, whose 
-Null Hypothesis is that the sample follows the normal distribution. 
-It can be observed that in both cases with our data H0 does not hold 
-and it will be considered that they do not follow the normal curve.
+Next, outliers in the previously created variable of age and in ‘Income’ will
+be identified. To do this, before starting the normality of both variables will
+be checked with the Kolmogorov-Smirnov test, whose Null Hypothesis is that the
+sample follows the normal distribution. It can be observed that in both cases
+with our data H0 does not hold and it will be considered that they do not
+follow the normal curve.
 
-```{python}
+```{python, class.source = "fold-show"}
 
 # KS-Test on 'Year_Old' column
 ks_result = kstest(data["Year_Old"], stats.norm.cdf, 
                    args=(data["Year_Old"].mean(), data["Year_Old"].std()))
 
-print(f"Test statistic: {ks_result.statistic:.4f}")
-print(f"p Value: {ks_result.pvalue:.4f}")
+print(f"Test statistic: {ks_result.statistic:.4f}"
+      f"\np Value: {ks_result.pvalue:.4f}")
 
 # KS-Test on 'Year_Old' column
 ks_result = kstest(data["Income"], stats.norm.cdf, 
                    args=(data["Income"].mean(), data["Income"].std()))
 
-print(f"Test statistic: {ks_result.statistic:.4f}")
-print(f"p Value: {ks_result.pvalue:.4f}")
+print(f"\nTest statistic: {ks_result.statistic:.4f}"
+      f"\np Value: {ks_result.pvalue:.4f}")
 ```
 
-Continue to obtain the outliers, which will be those extreme values 
-according to the interquartile range. For the variable ‘Year_Old’
-three outliers will be obtained, ages exceeding 120 years. 
-For ‘Income’ 8 outliers are found, but only one of them is considered 
-logically incoherent. Three clients will be discarded for age and one for ‘Income’.
+Continue to obtain the outliers, which will be those extreme values according
+to the interquartile range. For the variable ‘Year_Old’ three outliers will be
+obtained, ages exceeding 120 years. For ‘Income’ 8 outliers are found, but only
+one of them is considered logically incoherent. Three clients will be discarded
+for age and one for ‘Income’.
 
-```{python}
+```{python, class.source = 'foldable'}
 
 # Quartiles and IQR
 quartiles = data["Year_Old"].quantile([0.25, 0.75])
@@ -269,10 +278,14 @@ upper_bound = quartiles[0.75] + 1.5 * iqr
 Year_Old_outliers = data[(data["Year_Old"] < lower_bound) | 
                 (data["Year_Old"] > upper_bound)]
 
-print("IQR: ", iqr)
-print("outliers: ")
-print(Year_Old_outliers[["ID", "Year_Old", "Income", "CustomerFor", 
-                "Marital_Status", "MntSpentTotal"]])
+temp = Year_Old_outliers[["ID", "Year_Old", "Income", "CustomerFor", 
+                "Marital_Status", "MntSpentTotal"]]
+headers = temp.columns
+temp = tabulate(temp, headers, tablefmt="grid")
+print("IQR: ", iqr,
+      "\nYear_Old outliers: \n",
+      temp, sep='')
+
 
 # Extracting Outliers from the Dataset
 data.drop(Year_Old_outliers.index, inplace=True)
@@ -290,19 +303,23 @@ upper_bound = quartiles[0.75] + 1.5 * iqr
 income_outliers = data[(data["Income"] < lower_bound) | 
                 (data["Income"] > upper_bound)]
 
-print("IQR: ", iqr)
-print("outliers: ")
-print(income_outliers[["ID", "Year_Old", "Income", "CustomerFor", 
+temp = income_outliers[["ID", "Year_Old", "Income", "CustomerFor", 
                 "Marital_Status", "MntSpentTotal"]]\
-                    .sort_values("Income", ascending=False))
+                    .sort_values("Income", ascending=False)
+headers = temp.columns
+temp = tabulate(temp, headers, tablefmt="grid")
+print("IQR: ", iqr,
+      "\nYear_Old outliers: \n",
+      temp, sep='')
+
 
 # Extracting logically incoherent Outlier from the Dataset
 income_excluded = data.drop(2233, inplace=True)
 ```
 
-Finally, all excluded customer entries are stored in a single 
-variable for later export to a CSV file, so that no data 
-will be lost if they are ever needed.
+Finally, all excluded customer entries are stored in a single variable for
+later export to a CSV file, so that no data will be lost if they are ever
+needed.
 
 ```{python}
 
@@ -313,18 +330,32 @@ data_excluded = pd.concat([income_excluded,
                           marital_filt, 
                           row_nan])
 
-print(data_excluded[["ID", "Year_Old", "Income", "CustomerFor", 
-                "Marital_Status", "MntSpentTotal"]]\
-                    .sort_values("ID"))
+temp = data_excluded[["ID", "Year_Old", "Income", 
+                      "Marital_Status", "MntSpentTotal"]]\
+                      .sort_values("ID")
+```
+
+```{r}
+library(kableExtra)
+
+temp <- py$temp
+temp <- kable(temp)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
 ```
 
 ## Creating categorical columns
 
-Without outliers it is possible to continue creating categorical 
-columns as now an extreme value will not interfere with the intervals. 
-Categories will be made for ‘Year_Old’, ‘Income’, ‘MntSpentTotal’ and ‘Recency’.
+Without outliers it is possible to continue creating categorical columns as now
+an extreme value will not interfere with the intervals. Categories will be made
+for ‘Year_Old’, ‘Income’, ‘MntSpentTotal’ and ‘Recency’.
 
-```{python}
+```{python, class.source = "fold-show"}
 
 # Age binning categories
 bins = [25, 35, 45, 55, 65, 75, 2000]
@@ -353,12 +384,17 @@ labels = ["0_24", "25_49", "50_74", "75_99"]
 
 data["Recency_cat"] = pd.cut(data["Recency"], 4, precision=0, labels=labels)
 
-print("\n", data[["MntTotal_cat", "Age_cat", 
-                  "Income_cat", "Recency_cat"]].sample(5), sep='')
+temp = data[["MntTotal_cat", "Age_cat", 
+             "Income_cat", "Recency_cat"]].sample(5)
+
+headers = temp.columns
+temp = tabulate(temp, headers, tablefmt="grid")
+print(temp)
+
 ```
 
-Finally, duplicate clients will be checked for their ‘ID’ and data 
-types will be standardised to ‘Int64’ pandas.
+Finally, duplicate clients will be checked for their ‘ID’ and data types will
+be standardised to ‘Int64’ pandas.
 
 ```{python}
 
@@ -372,45 +408,44 @@ for col in data.columns:
         data[col] = data[col].astype("Int64")
 ```
 
-When saving the dataset as a CSV, the dataset will be saved with 
-the cleaned data as ‘ifood_cleaned.csv’ and the discarded data 
-as ‘ifood_excluded.csv’. It will also be useful to store the 
-column data types in a JSON to speed up the process when
-the dataset needs to be imported again.
+When saving the dataset as a CSV, the dataset will be saved with the cleaned
+data as ‘ifood_cleaned.csv’ and the discarded data as ‘ifood_excluded.csv’. It
+will also be useful to store the column data types in a JSON to speed up the
+process when the dataset needs to be imported again.
 
-```{python}
+```{python, class.source = "fold-show"}
 # Saving DataFrame as csv
-data.to_csv("../data/ifood_cleaned.csv", index=False)
+data.to_csv("../../data/ifood_cleaned.csv", index=False)
 
 # Saving dtypes of each column
 data_dtypes = data.dtypes.to_frame('dtypes').reset_index()
 dict = data_dtypes.set_index('index')['dtypes'].astype(str).to_dict()
 
-with open('../data/cleaned_dtypes.json', 'w') as f:
+with open('../../data/cleaned_dtypes.json', 'w') as f:
     json.dump(dict, f)
 
 # Storing excluded rows
-data.to_csv("../data/ifood_excluded.csv", index=False)
+data.to_csv("../../data/ifood_excluded.csv", index=False)
 ```
 
 # Descriptive Analysis
 
-This section will summarise the descriptive analysis with the data 
-considered most interesting, the full analysis can be found in 
-the notebook ‘02_descriptive.ipynb’ in the repository.
+This section will summarise the descriptive analysis with the data considered
+most interesting, the full analysis can be found in the notebook
+‘02_descriptive.ipynb’ in the repository.
 
-Dataset loading and formatting of categorical variables as the 
-‘dtype’ import does not include the order in the categories:
+Dataset loading and formatting of categorical variables as the ‘dtype’ import
+does not include the order in the categories:
 
-```{python}
+```{python, include=FALSE}
 # Storing path
-path = Path("../data/ifood_cleaned.csv")
+path = Path("../../data/ifood_cleaned.csv")
 
 # Read CSV with pandas
 data = pd.read_csv(path)
 
 # Read columns dtypes
-with open('../data/cleaned_dtypes.json', 'r') as f:
+with open('../../data/cleaned_dtypes.json', 'r') as f:
     data_types = json.load(f)
 data = data.astype(data_types)
 
@@ -442,11 +477,10 @@ data["Income_cat"] = data["Income_cat"].cat\
 
 ## Categorical variables
 
-The main interest would be in how many people accepted which campaigns 
-in order to take this into account in the next comparisons. It can be 
-seen how, taking into account the total sample, in each of the campaigns 
-the level of acceptance has been less than 10%, at most 7.44% in 
-the fourth campaign.
+The main interest would be in how many people accepted which campaigns in order
+to take this into account in the next comparisons. It can be seen how, taking
+into account the total sample, in each of the campaigns the level of acceptance
+has been less than 10%, at most 7.44% in the fourth campaign.
 
 ```{python}
 # Acceptance campaign groups
@@ -473,12 +507,39 @@ frec_tab = pd.concat([frec_abs, frec_rel, frec_per], axis=1,
 frec_tab.columns.names = ["Frequencies", "drop"]
 frec_tab = frec_tab.droplevel(level="drop", axis=1)
 
-display(frec_tab)
+temp = frec_tab.reset_index()
+temp_index = list(temp.index.values)
+
 ```
 
-The following table shows the frequencies of the age category ‘Age_cat’, 
-showing that the majority of customers are aged 45 and over, with 
-the category 45 to 55 having the highest number of customers, 33%.
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Age_cat <- temp_index
+temp <- temp %>%
+  select(Age_cat, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
+```
+
+The following table shows the frequencies of the age category ‘Age_cat’,
+showing that the majority of customers are aged 45 and over, with the category
+45 to 55 having the highest number of customers, 33%.
 
 ```{python}
 frec_abs = data["Age_cat"].value_counts().sort_index()
@@ -496,15 +557,41 @@ frec_acc = pd.concat([frec_abs_acc, frec_rel_acc, frec_per_acc], axis=1,
                      keys=["frec_abs_acc", "frec_rel_acc", "frec_per_acc"])
 frec_tab = pd.concat([frec_tab, frec_acc], axis=1)
 
-display(frec_tab)
+temp = frec_tab
+temp_index = list(temp.index.values)
+
 ```
 
-To finish with the categorical variables, another one that might 
-be of interest is the level of study, shown below as a stacked 
-bar chart showing the percentage of clients with different 
-studies. The bulk are graduates but we should not underestimate 
-PhD and Masters which between them also have a significant 
-number of clients.
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Age_cat <- temp_index
+temp <- temp %>%
+  select(Age_cat, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
+```
+
+To finish with the categorical variables, another one that might be of interest
+is the level of study, shown below as a stacked bar chart showing the
+percentage of clients with different studies. The bulk are graduates but we
+should not underestimate PhD and Masters which between them also have a
+significant number of clients.
 
 ``` python
 width = 0.2
@@ -526,11 +613,11 @@ plt.show();
 
 ## Quantitative variables
 
-First, the distribution of the variables will be checked for 
-normal distribution by listing the quantitative columns and 
-performing the Kolgomorov-Smirnov test on all of them.
+First, the distribution of the variables will be checked for normal
+distribution by listing the quantitative columns and performing the
+Kolgomorov-Smirnov test on all of them.
 
-```{python}
+```{python, class.source = "fold-show"}
 # KS-Test integer columns
 
 int_cols = ["Year_Old", "Income", "Recency", "MntSpentTotal", "MntWines", 
@@ -551,22 +638,46 @@ results.columns = ["Statistic", "p-Value"]
 results.columns.names = ["KS-Test"]
 results.index.names = ["int_cols"]
 
-display(results)
+temp = results
+temp_index = list(results.index.values)
 ```
 
-To continue, it would be interesting to observe in the same table 
-the descriptive statistics for each variable, for which several 
-functions will be defined to obtain the range between the minimum 
-and the maximum, to obtain the coefficient of variation centred 
-on the mean, and the trimmed mean as another robust measure of 
-central tendency. In addition, a class will be defined to obtain 
-the Winsorised Mean which is less robust than the trimmed mean and 
-can give us an idea of the central tendency of the variables. 
-Finally, two new columns will be generated in the results to help 
-to see the dispersion of the data, its symmetry, thanks to the 
-values of skewness and kurtosis.
+```{r}
+library(kableExtra)
+library(dplyr)
 
-```{python}
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$KS_test <- temp_index
+temp <- temp %>%
+  select(KS_test, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
+```
+
+To continue, it would be interesting to observe in the same table the
+descriptive statistics for each variable, for which several functions will be
+defined to obtain the range between the minimum and the maximum, to obtain the
+coefficient of variation centred on the mean, and the trimmed mean as another
+robust measure of central tendency. In addition, a class will be defined to
+obtain the Winsorised Mean which is less robust than the trimmed mean and can
+give us an idea of the central tendency of the variables. Finally, two new
+columns will be generated in the results to help to see the dispersion of the
+data, its symmetry, thanks to the values of skewness and kurtosis.
+
+```{python, class.source = "fold-show"}
 class WinsorizedMeanCalculator:
     def __init__(self, lower_percentile=0.05, upper_percentile=0.95):
         """
@@ -630,6 +741,10 @@ def trimean(series):
     Q3 = series.quantile(0.75)
     return (Q1 + 2 * median + Q3) / 4
 
+
+```
+
+```{python, class.source = "fold-show"}
 results = data[int_cols].agg(["mean", "median", trimean, 
                               #stats.median_abs_deviation,
                               "std", cdv,
@@ -653,28 +768,54 @@ results["kurt/std"] = (results["kurt"] / results["std"])
 #    less than -2, the distribution can be said to be 
 #    negatively skewed (or platykurtic).
 
+
 results = results.map(lambda x: f"{x:.2f}")
 
 results.columns.names = ["Descriptive Stats"]
 results.index.names = ["int_cols"]
 
-results
+temp = results
+temp_index = list(results.index.values)
 ```
 
-If the above table with the descriptives is observed, it can be seen 
-that the six variables corresponding to the money spent by type of 
-product are the ones with the greatest dispersion. Also the asymmetry 
-corresponding to the purchase platform, whether web, in-store or 
-catalogue, are the three variables with the highest leptokurtic asymmetry.
+```{r}
+library(kableExtra)
+library(dplyr)
 
-As mentioned before, in the notebook is in greater detail the analysis, 
-showing a histogram with density line one of the variables mentioned.
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
 
-Finally, taking into account the variable ‘MntSpentTotal’ the total 
-amount of money they have spent, will be shown in comparison with age
-groups and marital status. Also, taking into account the marital status, 
-bar charts will be displayed for each type of product and its 
-corresponding expenditure.
+# Creating Index
+temp$Columns <- temp_index
+temp <- temp %>%
+  select(Columns, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
+```
+
+If the above table with the descriptives is observed, it can be seen that the
+six variables corresponding to the money spent by type of product are the ones
+with the greatest dispersion. Also the asymmetry corresponding to the purchase
+platform, whether web, in-store or catalogue, are the three variables with the
+highest leptokurtic asymmetry.
+
+As mentioned before, in the notebook is in greater detail the analysis, showing
+a histogram with density line one of the variables mentioned.
+
+Finally, taking into account the variable ‘MntSpentTotal’ the total amount of
+money they have spent, will be shown in comparison with age groups and marital
+status. Also, taking into account the marital status, bar charts will be
+displayed for each type of product and its corresponding expenditure.
 
 ``` python
 fig, ax =plt.subplots(3,2)
@@ -697,10 +838,9 @@ plt.show()
 
 ![](images/clipboard-2388679408.png)
 
-The following two tables that will conclude the descriptive analysis 
-section show the descriptive statistics separating those who 
-have accepted any campaign (represented by `_y`) from those who 
-have not accepted any (`_n`).
+The following two tables that will conclude the descriptive analysis section
+show the descriptive statistics separating those who have accepted any campaign
+(represented by `_y`) from those who have not accepted any (`_n`).
 
 ```{python}
 spent_mnt = ["MntWines", "MntFruits", "MntMeatProducts", 
@@ -723,13 +863,38 @@ temp = temp[['mean_y', 'mean_n', 'median_y', 'median_n', 'std_y', 'std_n',
 temp.index.names = ["Amount Spent"]
 temp.columns.names = ["Results"]
 temp = temp.map(lambda x: f"{x:.2f}")
-print(temp)
+temp_index = list(temp.index.values)
 ```
 
-The table above shows how the averages for all types of products 
-seem to be higher in the group of people who accepted a campaign, 
-and also thanks to the value provided by the dispersion coefficient, 
-there is less dispersion in their data.
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Columns <- temp_index
+temp <- temp %>%
+  select(Columns, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
+```
+
+The table above shows how the averages for all types of products seem to be
+higher in the group of people who accepted a campaign, and also thanks to the
+value provided by the dispersion coefficient, there is less dispersion in their
+data.
 
 ```{python}
 numpurchases = ["NumPurchasesTotal", "NumWebPurchases", "NumStorePurchases",
@@ -749,22 +914,46 @@ temp = temp[['mean_y', 'mean_n', 'median_y', 'median_n', 'std_y', 'std_n',
 temp.index.names = ["Purchases"]
 temp.columns.names = ["Results"]
 temp = temp.map(lambda x: f"{x:.2f}")
-display(temp)
+temp_index = list(temp.index.values)
 ```
 
-Following the previous line, the average number of purchases is 
-higher in those who accepted a campaign but not in purchases with 
-an offer, which seem to be higher in the group that did not accept 
-campaigns. Similarly, there is less dispersion of the data in 
-those who accepted campaigns.
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Columns <- temp_index
+temp <- temp %>%
+  select(Columns, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
+```
+
+Following the previous line, the average number of purchases is higher in those
+who accepted a campaign but not in purchases with an offer, which seem to be
+higher in the group that did not accept campaigns. Similarly, there is less
+dispersion of the data in those who accepted campaigns.
 
 # Inferential Analysis
 
-Thanks to the inferential analysis that follows in this section, 
-it will be possible to observe relationships and comparisons of groups, 
-mainly those who accept offers with those who do not, in order to obtain 
-a customer profile that is interesting for the Marketing team and 
-thus in the next campaign to obtain more beneficial numbers.
+Thanks to the inferential analysis that follows in this section, it will be
+possible to observe relationships and comparisons of groups, mainly those who
+accept offers with those who do not, in order to obtain a customer profile that
+is interesting for the Marketing team and thus in the next campaign to obtain
+more beneficial numbers.
 
 ```{python, include=FALSE}
 class WinsorizedMeanCalculator:
@@ -834,13 +1023,13 @@ def trimean(series):
     return (Q1 + 2 * median + Q3) / 4
 
 # Storing path
-path = Path("../data/ifood_cleaned.csv")
+path = Path("../../data/ifood_cleaned.csv")
 
 # Read CSV with pandas
 data = pd.read_csv(path)
 
 # Read columns dtypes
-with open('../data/cleaned_dtypes.json', 'r') as f:
+with open('../../data/cleaned_dtypes.json', 'r') as f:
     data_types = json.load(f)
 
 data = data.astype(data_types)
@@ -875,10 +1064,10 @@ data_ncmp = data[data["AcceptedCmpTotal"] == 0]
 
 ## Correlations
 
-Three correlation matrices of the quantitative variables will be shown
-below with heat maps for better visualisation, one for the whole dataset 
-as a whole and then two differentiating between those who did and did 
-not accept a campaign.
+Three correlation matrices of the quantitative variables will be shown below
+with heat maps for better visualisation, one for the whole dataset as a whole
+and then two differentiating between those who did and did not accept a
+campaign.
 
 ``` python
 corr_matrix = data[int_cols].corr()
@@ -914,20 +1103,19 @@ plt.show()
 
 ![](images/clipboard-1882361656.png)
 
-The strengths of the relationships are similar for all three 
-correlation matrices. A stronger relationship is observed between the 
-income customers have with the total spent as well as in the number 
-of purchases made. It appears that the highest number of purchases is 
-related to those made directly in the shop, with wine and meat being 
-the most expensive, although in terms of money spent it appears to be 
-related to purchases through the catalogue. Offers are then negatively 
-related to those who have accepted a campaign, and offers are also 
-positively related to the children they have at home.
+The strengths of the relationships are similar for all three correlation
+matrices. A stronger relationship is observed between the income customers have
+with the total spent as well as in the number of purchases made. It appears
+that the highest number of purchases is related to those made directly in the
+shop, with wine and meat being the most expensive, although in terms of money
+spent it appears to be related to purchases through the catalogue. Offers are
+then negatively related to those who have accepted a campaign, and offers are
+also positively related to the children they have at home.
 
 ## Comparisons
 
-First, the percentage of customers who accepted a campaign and those 
-who did not accept a campaign will be illustrated in a clear and simple way.
+First, the percentage of customers who accepted a campaign and those who did
+not accept a campaign will be illustrated in a clear and simple way.
 
 ``` python
 fig, ax = plt.subplots()
@@ -941,9 +1129,9 @@ plt.show();
 
 ![](images/clipboard-272067265.png)
 
-Before starting with the comparisons, the assumptions of normality
-and homoscedasticity will be checked, thereby deciding on the most 
-appropriate type of test to perform the between-group comparisons.
+Before starting with the comparisons, the assumptions of normality and
+homoscedasticity will be checked, thereby deciding on the most appropriate type
+of test to perform the between-group comparisons.
 
 ```{python}
 # KS-Test and Levene on integer columns by campaign acceptance
@@ -994,25 +1182,51 @@ column_names = [("Ks-test", "Statistic (y)"), ("Ks-test", "p-Value (y)"),
                 ("Levene", "Statistic"), ("Levene", "p-Value")]
 results.columns = pd.MultiIndex.from_tuples(column_names)
 
-display(results)
+temp = results
+temp_index = list(temp.index.values)
+
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Columns <- temp_index
+temp <- temp %>%
+  select(Columns, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ### Parametric pairwise comparison
 
-The T-test for independent samples will be performed on those columns 
-where it has been observed that the homoscedasticity assumption is met, 
-being a large sample (\>50) normality may not be met, but both 
-assumptions cannot be violated for this test. The Null Hypothesis of 
-the T-test for independent samples is equality in the means of the 
-groups compared, therefore a *p* value of less than 0.05 would indicate 
-that the groups are not equal.
+The T-test for independent samples will be performed on those columns where it
+has been observed that the homoscedasticity assumption is met, being a large
+sample (\>50) normality may not be met, but both assumptions cannot be violated
+for this test. The Null Hypothesis of the T-test for independent samples is
+equality in the means of the groups compared, therefore a *p* value of less
+than 0.05 would indicate that the groups are not equal.
 
-The comparison is whether there are differences between the means of the 
-groups that did or did not accept a campaign on the variables ‘Income’,
-‘Recency’, ‘NumDealsPurchases’, ‘NumWebPurchases’, and ‘NumStorePurchases’. 
-A *p* value of less than 0.05 indicates that the group means are not equal. 
-The effect size was also tested with Cohen's *d* with the author's 
-recommended cut-off points of 0.20: small, 0.50: medium, 0.80: large [@cohen1992].
+The comparison is whether there are differences between the means of the groups
+that did or did not accept a campaign on the variables ‘Income’, ‘Recency’,
+‘NumDealsPurchases’, ‘NumWebPurchases’, and ‘NumStorePurchases’. A *p* value of
+less than 0.05 indicates that the group means are not equal. The effect size
+was also tested with Cohen's *d* with the author's recommended cut-off points
+of 0.20: small, 0.50: medium, 0.80: large [@cohen1992].
 
 ```{python}
 cols_tt = ["Income", "Recency", "NumDealsPurchases", 
@@ -1051,12 +1265,12 @@ for col in cols_tt:
 
 ### Non-parametric pairwise comparison
 
-For the remaining variables that do not meet the assumptions, 
-the Mann-Whitney U test, a robust test equivalent to the independent 
-samples t-test, will be used. Also the effect size will be 
-measured this time with Wendt's formula for the Biserial Range [@wendt1972] 
-specific to the U-statistic. In this case the strength of the effect 
-will be 0.10: small, 0.30: medium, 0.50: large [@coolican2013].
+For the remaining variables that do not meet the assumptions, the Mann-Whitney
+U test, a robust test equivalent to the independent samples t-test, will be
+used. Also the effect size will be measured this time with Wendt's formula for
+the Biserial Range [@wendt1972] specific to the U-statistic. In this case the
+strength of the effect will be 0.10: small, 0.30: medium, 0.50: large
+[@coolican2013].
 
 ```{python}
 cols_umw = ["Year_Old", "MntSpentTotal", "MntWines", 
@@ -1121,49 +1335,79 @@ print("MntSpentTotal std in last campaign with no Acceptance:\n"
       f"\t{data[data["Response"] == 0]["MntSpentTotal"].std():.4f}")
 print("MntSpentTotal std in last campaign with Acceptance:\n"
       f"\t{data[data["Response"] == 1]["MntSpentTotal"].std():.4f}\n")
-display(result_mwu)
+temp = result_mwu
+temp_index = list(temp.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ### Multiple comparison
 
-In the case of comparisons of more than 2 groups, since the ANOVA 
-test cannot be performed due to non-compliance with assumptions, 
-the alternative will be the Kruskal Wallis H test. In the case 
-of significant group comparisons, the Games Howell *post-hoc* 
-test will perform all possible pairwise comparisons and we will 
-obtain the strength of the effect of each comparison with Eta-square, 
-with cut-off points at 0.04: minimum necessary, 0.25: moderate,
-0.64: strong [@ferguson2009].
+In the case of comparisons of more than 2 groups, since the ANOVA test cannot
+be performed due to non-compliance with assumptions, the alternative will be
+the Kruskal Wallis H test. In the case of significant group comparisons, the
+Games Howell *post-hoc* test will perform all possible pairwise comparisons and
+we will obtain the strength of the effect of each comparison with Eta-square,
+with cut-off points at 0.04: minimum necessary, 0.25: moderate, 0.64: strong
+[@ferguson2009].
 
-```{python}
+```{python, class.source = "fold-show"}
 data["cmp_accp"] = np.where(data["AcceptedCmpTotal"] > 0, 1, 0)
 ```
 
-Starting with the groups where no differences between their categories 
-have been found, there are ‘Recency’, ‘Recency_cat’ and ‘Marital_Status’.
+Comenzando por los grupos en los que no se ha visto que haya diferencias entre
+sus categorías, están 'Recency', 'Recency_cat' y 'Marital_Status'.
 
-```{python}
-result_kw = pg.kruskal(data=data, 
+```{python, class.source = "fold-show"}
+result_kw1 = pg.kruskal(data=data, 
                        dv="MntSpentTotal", 
                        between="Recency_cat")
 
-display(result_kw)
 
-result_kw = pg.kruskal(data=data, 
+result_kw3 = pg.kruskal(data=data, 
+                       dv="MntSpentTotal", 
+                       between="Marital_Status")
+                       
+
+result_kw2 = pg.kruskal(data=data, 
                        dv="Recency", 
                        between="AcceptedCmpTotal")
 
-display(result_kw)
+result_kw = pd.concat([result_kw1, result_kw3, result_kw2])
 
-result_kw = pg.kruskal(data=data, 
-                       dv="MntSpentTotal", 
-                       between="Marital_Status")
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("MntSpentTotal on Recency_cat and Marital_Status; " 
+    "Also Recency on AcceptedCmpTotal:\n",
+    result_kw, sep='')
 
-display(result_kw)
 ```
 
-The following comparisons will be around how many campaigns customers 
-have accepted, ranging from 0 to 4, on different variables.
+The following comparisons will be around how many campaigns customers have
+accepted, ranging from 0 to 4, on different variables.
 
 ```{python}
 result_kw = pg.kruskal(data=data, 
@@ -1178,9 +1422,37 @@ result_pair = pg.pairwise_gameshowell(data=data,
 result_kw = round(result_kw, 4)
 result_pair = round(result_pair, 4)
 
-display(result_kw)
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("NumStorePurchases on AcceptedCmpTotal: \n",result_kw, sep='')
 
-display(result_pair)
+temp = result_pair
+temp_index = list(temp.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ```{python}
@@ -1196,9 +1468,37 @@ result_pair = pg.pairwise_gameshowell(data=data,
 result_kw = round(result_kw, 4)
 result_pair = round(result_pair, 4)
 
-display(result_kw)
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("NumWebPurchases on AcceptedCmpTotal: \n",result_kw, sep='')
 
-display(result_pair)
+temp = result_pair
+temp_index = list(temp.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ```{python}
@@ -1214,13 +1514,43 @@ result_pair = pg.pairwise_gameshowell(data=data,
 result_kw = round(result_kw, 4)
 result_pair = round(result_pair, 4)
 
-display(result_kw)
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("NumCatalogPurchases on AcceptedCmpTotal: \n",result_kw, sep='')
 
-display(result_pair)
+temp = result_pair
+temp_index = list(temp.index.values)
+
+
 ```
 
-And finally, comparing the number of campaigns accepted with 
-the type of product on which they have spent the most.
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
+```
+
+And finally, comparing the number of campaigns accepted with the type of
+product on which they have spent the most.
 
 ```{python}
 result_kw = pg.kruskal(data=data, 
@@ -1235,9 +1565,38 @@ result_pair = pg.pairwise_gameshowell(data=data,
 result_kw = round(result_kw, 4)
 result_pair = round(result_pair, 4)
 
-display(result_kw)
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("MntSpentTotal on AcceptedCmpTotal: \n",result_kw, sep='')
 
-display(result_pair)
+temp = result_pair
+temp_index = list(temp.index.values)
+
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ```{python}
@@ -1259,10 +1618,16 @@ for col in cols:
 
     print(f"\nComparisons for 'AcceptedCmpTotal' on {col}:")
     print("\nH Kruskal Wallis:\n")
-    display(result_kw)
+
+    headers = result_kw.columns
+    result_kw = tabulate(result_kw, headers, tablefmt="grid")
+    print(result_kw)
 
     print("\nGames Howell Pair Comparisons:\n")
-    display(result_pair)
+
+    headers = result_pair.columns
+    result_pair = tabulate(result_pair, headers, tablefmt="grid")
+    print(result_pair)
 ```
 
 # Conclusions

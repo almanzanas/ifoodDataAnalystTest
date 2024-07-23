@@ -11,6 +11,14 @@ output:
     lightbox: true
     highlight: breezedark
     use_bookdown: true
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    fig_caption: true
+    number_sections: true
+    keep_tex: false
+    citation_package: natbib
+    bibliography: references.bib
 pkgdown:
   as_is: true
 editor_options: 
@@ -29,11 +37,11 @@ options(max.print = "79")
 knitr::opts_chunk$set(
   echo = TRUE, cache = FALSE, prompt = FALSE,
   tidy = FALSE, comment = NA,
-  message = FALSE, warning = FALSE
+  message = FALSE, warning = FALSE, fig.align = "center"
 )
 opts_knit$set(width = 79)
 reticulate::use_python("U:/Users/alvar/miniforge3/envs/learning")
-knitr::knit_engines$set(python = reticulate::eng_python)
+knitr::knit_engines$set(python.reticulate = FALSE)
 
 ```
 
@@ -72,7 +80,7 @@ from datetime import datetime
 from scipy import stats
 from scipy.stats import kstest
 from IPython.display import display
-
+from tabulate import tabulate
 
 import psutil
 import warnings
@@ -82,7 +90,7 @@ warnings.filterwarnings("ignore")
 plt.rcdefaults()
 
 # Storing path
-path = Path("../data/ifood_customers.csv")
+path = Path("../../data/ifood_customers.csv")
 
 # Read CSV with pandas
 data = pd.read_csv(path)
@@ -203,6 +211,7 @@ pop_column = data.pop("NumPurchasesTotal")
 data.insert(20, "NumPurchasesTotal", pop_column)
 
 data.info()
+
 ```
 
 ## Descartando entradas de clientes
@@ -217,7 +226,7 @@ descartarán. A continuación consideraremos lógicamente incoherentes aquellos
 clientes que hayan respondido en Estado Marital (que comprobamos anteriormente)
 con "Alone, Absurd, o Yolo".
 
-```{python}
+```{python, class.source = "fold-show"}
 
 # Missing Values
 row_nan = data[data.isna().any(axis=1)]
@@ -235,21 +244,21 @@ como Hipótesis Nula que la muestra sigue la distribución normal. Se puede
 observar que en ambos casos con nuestros datos no se mantiene H0 y se
 considerará que no siguen la curva normal.
 
-```{python}
+```{python, class.source = "fold-show"}
 
 # KS-Test on 'Year_Old' column
 ks_result = kstest(data["Year_Old"], stats.norm.cdf, 
                    args=(data["Year_Old"].mean(), data["Year_Old"].std()))
 
-print(f"Test statistic: {ks_result.statistic:.4f}")
-print(f"p Value: {ks_result.pvalue:.4f}")
+print(f"Test statistic: {ks_result.statistic:.4f}"
+      f"\np Value: {ks_result.pvalue:.4f}")
 
 # KS-Test on 'Year_Old' column
 ks_result = kstest(data["Income"], stats.norm.cdf, 
                    args=(data["Income"].mean(), data["Income"].std()))
 
-print(f"Test statistic: {ks_result.statistic:.4f}")
-print(f"p Value: {ks_result.pvalue:.4f}")
+print(f"\nTest statistic: {ks_result.statistic:.4f}"
+      f"\np Value: {ks_result.pvalue:.4f}")
 ```
 
 Continuaremos obteniendo los valores atípicos, que serán aquellos valores
@@ -259,7 +268,7 @@ encuentran 8 valores atípicos, pero únicamente uno de ellos se considera
 lógicamente incoherente. Se descartarán tres clientes por la edad y uno por
 'Income'.
 
-```{python}
+```{python, class.source = 'foldable'}
 
 # Quartiles and IQR
 quartiles = data["Year_Old"].quantile([0.25, 0.75])
@@ -273,10 +282,14 @@ upper_bound = quartiles[0.75] + 1.5 * iqr
 Year_Old_outliers = data[(data["Year_Old"] < lower_bound) | 
                 (data["Year_Old"] > upper_bound)]
 
-print("IQR: ", iqr)
-print("outliers: ")
-print(Year_Old_outliers[["ID", "Year_Old", "Income", "CustomerFor", 
-                "Marital_Status", "MntSpentTotal"]])
+temp = Year_Old_outliers[["ID", "Year_Old", "Income", "CustomerFor", 
+                "Marital_Status", "MntSpentTotal"]]
+headers = temp.columns
+temp = tabulate(temp, headers, tablefmt="grid")
+print("IQR: ", iqr,
+      "\nYear_Old outliers: \n",
+      temp, sep='')
+
 
 # Extracting Outliers from the Dataset
 data.drop(Year_Old_outliers.index, inplace=True)
@@ -294,11 +307,15 @@ upper_bound = quartiles[0.75] + 1.5 * iqr
 income_outliers = data[(data["Income"] < lower_bound) | 
                 (data["Income"] > upper_bound)]
 
-print("IQR: ", iqr)
-print("outliers: ")
-print(income_outliers[["ID", "Year_Old", "Income", "CustomerFor", 
+temp = income_outliers[["ID", "Year_Old", "Income", "CustomerFor", 
                 "Marital_Status", "MntSpentTotal"]]\
-                    .sort_values("Income", ascending=False))
+                    .sort_values("Income", ascending=False)
+headers = temp.columns
+temp = tabulate(temp, headers, tablefmt="grid")
+print("IQR: ", iqr,
+      "\nYear_Old outliers: \n",
+      temp, sep='')
+
 
 # Extracting logically incoherent Outlier from the Dataset
 income_excluded = data.drop(2233, inplace=True)
@@ -317,9 +334,23 @@ data_excluded = pd.concat([income_excluded,
                           marital_filt, 
                           row_nan])
 
-print(data_excluded[["ID", "Year_Old", "Income", "CustomerFor", 
-                "Marital_Status", "MntSpentTotal"]]\
-                    .sort_values("ID"))
+temp = data_excluded[["ID", "Year_Old", "Income", 
+                      "Marital_Status", "MntSpentTotal"]]\
+                      .sort_values("ID")
+```
+
+```{r}
+library(kableExtra)
+
+temp <- py$temp
+temp <- kable(temp)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
 ```
 
 ## Creando columnas categoriales
@@ -328,7 +359,7 @@ Sin datos atípicos se puede continuar creando columnas categoriales ya que
 ahora un valor extremos no interferirá en los intervalos. Se harán categorías
 para 'Year_Old', 'Income', 'MntSpentTotal' y 'Recency'.
 
-```{python}
+```{python, class.source = "fold-show"}
 
 # Age binning categories
 bins = [25, 35, 45, 55, 65, 75, 2000]
@@ -357,8 +388,13 @@ labels = ["0_24", "25_49", "50_74", "75_99"]
 
 data["Recency_cat"] = pd.cut(data["Recency"], 4, precision=0, labels=labels)
 
-print("\n", data[["MntTotal_cat", "Age_cat", 
-                  "Income_cat", "Recency_cat"]].sample(5), sep='')
+temp = data[["MntTotal_cat", "Age_cat", 
+             "Income_cat", "Recency_cat"]].sample(5)
+
+headers = temp.columns
+temp = tabulate(temp, headers, tablefmt="grid")
+print(temp)
+
 ```
 
 Por último, se comprobará si hay clientes duplicados por su 'ID' y se
@@ -382,19 +418,19 @@ datos limpios como 'ifood_cleaned.csv' y los descartados como
 de las columnas en un JSON para agilizar el proceso cuando se requiera importar
 el dataset de nuevo.
 
-```{python}
+```{python, class.source = "fold-show"}
 # Saving DataFrame as csv
-data.to_csv("../data/ifood_cleaned.csv", index=False)
+data.to_csv("../../data/ifood_cleaned.csv", index=False)
 
 # Saving dtypes of each column
 data_dtypes = data.dtypes.to_frame('dtypes').reset_index()
 dict = data_dtypes.set_index('index')['dtypes'].astype(str).to_dict()
 
-with open('../data/cleaned_dtypes.json', 'w') as f:
+with open('../../data/cleaned_dtypes.json', 'w') as f:
     json.dump(dict, f)
 
 # Storing excluded rows
-data.to_csv("../data/ifood_excluded.csv", index=False)
+data.to_csv("../../data/ifood_excluded.csv", index=False)
 ```
 
 # Análisis Descriptivo
@@ -406,15 +442,15 @@ notebook '02_descriptive.ipynb' del repositorio.
 Carga de dataset y formateo de variables categóricas ya que la importación de
 los 'dtype' no incluye el orden en las categorías:
 
-```{python}
+```{python, include=FALSE}
 # Storing path
-path = Path("../data/ifood_cleaned.csv")
+path = Path("../../data/ifood_cleaned.csv")
 
 # Read CSV with pandas
 data = pd.read_csv(path)
 
 # Read columns dtypes
-with open('../data/cleaned_dtypes.json', 'r') as f:
+with open('../../data/cleaned_dtypes.json', 'r') as f:
     data_types = json.load(f)
 data = data.astype(data_types)
 
@@ -476,7 +512,34 @@ frec_tab = pd.concat([frec_abs, frec_rel, frec_per], axis=1,
 frec_tab.columns.names = ["Frequencies", "drop"]
 frec_tab = frec_tab.droplevel(level="drop", axis=1)
 
-display(frec_tab)
+temp = frec_tab.reset_index()
+temp_index = list(temp.index.values)
+
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Age_cat <- temp_index
+temp <- temp %>%
+  select(Age_cat, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 La siguiente tabla muestra las frecuencias de la categoria de edad 'Age_cat',
@@ -499,7 +562,34 @@ frec_acc = pd.concat([frec_abs_acc, frec_rel_acc, frec_per_acc], axis=1,
                      keys=["frec_abs_acc", "frec_rel_acc", "frec_per_acc"])
 frec_tab = pd.concat([frec_tab, frec_acc], axis=1)
 
-display(frec_tab)
+temp = frec_tab
+temp_index = list(temp.index.values)
+
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Age_cat <- temp_index
+temp <- temp %>%
+  select(Age_cat, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 Para finalizar con las variables categóricas, otra que podría ser de interés es
@@ -532,7 +622,7 @@ Primero se comprobará si la distribución de las variables sigue la normal, par
 ello se listarán las columnas cuantitativas y se realizará la prueba
 Kolgomorov-Smirnov en todas ellas.
 
-```{python}
+```{python, class.source = "fold-show"}
 # KS-Test integer columns
 
 int_cols = ["Year_Old", "Income", "Recency", "MntSpentTotal", "MntWines", 
@@ -553,7 +643,33 @@ results.columns = ["Statistic", "p-Value"]
 results.columns.names = ["KS-Test"]
 results.index.names = ["int_cols"]
 
-display(results)
+temp = results
+temp_index = list(results.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$KS_test <- temp_index
+temp <- temp %>%
+  select(KS_test, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 Para continuar, sería interesante observar en una misma tabla los estadísticos
@@ -566,7 +682,7 @@ central de las variables. Por último, generaremos en los resultados dos
 columnas nuevas que ayuden a ver la dispersión de los datos, su simetría,
 gracias a los valores de asimetría y curtosis.
 
-```{python}
+```{python, class.source = "fold-show"}
 class WinsorizedMeanCalculator:
     def __init__(self, lower_percentile=0.05, upper_percentile=0.95):
         """
@@ -630,6 +746,10 @@ def trimean(series):
     Q3 = series.quantile(0.75)
     return (Q1 + 2 * median + Q3) / 4
 
+
+```
+
+```{python, class.source = "fold-show"}
 results = data[int_cols].agg(["mean", "median", trimean, 
                               #stats.median_abs_deviation,
                               "std", cdv,
@@ -659,7 +779,33 @@ results = results.map(lambda x: f"{x:.2f}")
 results.columns.names = ["Descriptive Stats"]
 results.index.names = ["int_cols"]
 
-results
+temp = results
+temp_index = list(results.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Columns <- temp_index
+temp <- temp %>%
+  select(Columns, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 Si se observa la tabla anterior con los descriptivos, se puede ver que las seis
@@ -724,7 +870,32 @@ temp = temp[['mean_y', 'mean_n', 'median_y', 'median_n', 'std_y', 'std_n',
 temp.index.names = ["Amount Spent"]
 temp.columns.names = ["Results"]
 temp = temp.map(lambda x: f"{x:.2f}")
-print(temp)
+temp_index = list(temp.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Columns <- temp_index
+temp <- temp %>%
+  select(Columns, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 En la tabla anterior se observa como las medias en todos los tipos de productos
@@ -750,7 +921,32 @@ temp = temp[['mean_y', 'mean_n', 'median_y', 'median_n', 'std_y', 'std_n',
 temp.index.names = ["Purchases"]
 temp.columns.names = ["Results"]
 temp = temp.map(lambda x: f"{x:.2f}")
-display(temp)
+temp_index = list(temp.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Columns <- temp_index
+temp <- temp %>%
+  select(Columns, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 Siguiendo al línea anterior, el numero de compras medio es mayor en aquellas
@@ -834,13 +1030,13 @@ def trimean(series):
     return (Q1 + 2 * median + Q3) / 4
 
 # Storing path
-path = Path("../data/ifood_cleaned.csv")
+path = Path("../../data/ifood_cleaned.csv")
 
 # Read CSV with pandas
 data = pd.read_csv(path)
 
 # Read columns dtypes
-with open('../data/cleaned_dtypes.json', 'r') as f:
+with open('../../data/cleaned_dtypes.json', 'r') as f:
     data_types = json.load(f)
 
 data = data.astype(data_types)
@@ -994,7 +1190,34 @@ column_names = [("Ks-test", "Statistic (y)"), ("Ks-test", "p-Value (y)"),
                 ("Levene", "Statistic"), ("Levene", "p-Value")]
 results.columns = pd.MultiIndex.from_tuples(column_names)
 
-display(results)
+temp = results
+temp_index = list(temp.index.values)
+
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$Columns <- temp_index
+temp <- temp %>%
+  select(Columns, everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ### Comparación por pares paramétrica
@@ -1122,7 +1345,33 @@ print("MntSpentTotal std in last campaign with no Acceptance:\n"
       f"\t{data[data["Response"] == 0]["MntSpentTotal"].std():.4f}")
 print("MntSpentTotal std in last campaign with Acceptance:\n"
       f"\t{data[data["Response"] == 1]["MntSpentTotal"].std():.4f}\n")
-display(result_mwu)
+temp = result_mwu
+temp_index = list(temp.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ### Comparación múltiple
@@ -1135,31 +1384,37 @@ pares posible y obtendremos la fuerza del efecto de cada comparación con
 Eta-square, con los puntos de corte en 0.04: mínima necesaria, 0.25: moderada,
 0.64: fuerte [@ferguson2009].
 
-```{python}
+```{python, class.source = "fold-show"}
 data["cmp_accp"] = np.where(data["AcceptedCmpTotal"] > 0, 1, 0)
 ```
 
 Comenzando por los grupos en los que no se ha visto que haya diferencias entre
 sus categorías, están 'Recency', 'Recency_cat' y 'Marital_Status'.
 
-```{python}
-result_kw = pg.kruskal(data=data, 
+```{python, class.source = "fold-show"}
+result_kw1 = pg.kruskal(data=data, 
                        dv="MntSpentTotal", 
                        between="Recency_cat")
 
-display(result_kw)
 
-result_kw = pg.kruskal(data=data, 
+result_kw3 = pg.kruskal(data=data, 
+                       dv="MntSpentTotal", 
+                       between="Marital_Status")
+                       
+
+result_kw2 = pg.kruskal(data=data, 
                        dv="Recency", 
                        between="AcceptedCmpTotal")
 
-display(result_kw)
+result_kw = pd.concat([result_kw1, result_kw3, result_kw2])
 
-result_kw = pg.kruskal(data=data, 
-                       dv="MntSpentTotal", 
-                       between="Marital_Status")
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("MntSpentTotal on Recency_cat and Marital_Status; " 
+    "Also Recency on AcceptedCmpTotal:\n",
+    result_kw, sep='')
 
-display(result_kw)
+
 ```
 
 Las siguientes comparaciones serán en torno a cuántas campañas han aceptado los
@@ -1178,9 +1433,37 @@ result_pair = pg.pairwise_gameshowell(data=data,
 result_kw = round(result_kw, 4)
 result_pair = round(result_pair, 4)
 
-display(result_kw)
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("NumStorePurchases on AcceptedCmpTotal: \n",result_kw, sep='')
 
-display(result_pair)
+temp = result_pair
+temp_index = list(temp.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ```{python}
@@ -1196,9 +1479,37 @@ result_pair = pg.pairwise_gameshowell(data=data,
 result_kw = round(result_kw, 4)
 result_pair = round(result_pair, 4)
 
-display(result_kw)
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("NumWebPurchases on AcceptedCmpTotal: \n",result_kw, sep='')
 
-display(result_pair)
+temp = result_pair
+temp_index = list(temp.index.values)
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ```{python}
@@ -1214,9 +1525,39 @@ result_pair = pg.pairwise_gameshowell(data=data,
 result_kw = round(result_kw, 4)
 result_pair = round(result_pair, 4)
 
-display(result_kw)
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("NumCatalogPurchases on AcceptedCmpTotal: \n",result_kw, sep='')
 
-display(result_pair)
+temp = result_pair
+temp_index = list(temp.index.values)
+
+
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 Y por último, comparando en número de campañas aceptadas con el tipo de
@@ -1235,9 +1576,38 @@ result_pair = pg.pairwise_gameshowell(data=data,
 result_kw = round(result_kw, 4)
 result_pair = round(result_pair, 4)
 
-display(result_kw)
+headers = result_kw.columns
+result_kw = tabulate(result_kw, headers, tablefmt="grid")
+print("MntSpentTotal on AcceptedCmpTotal: \n",result_kw, sep='')
 
-display(result_pair)
+temp = result_pair
+temp_index = list(temp.index.values)
+
+```
+
+```{r}
+library(kableExtra)
+library(dplyr)
+
+# Importing data from python
+temp <- py$temp
+temp_index = py$temp_index
+
+# Creating Index
+temp$'.' <- temp_index
+temp <- temp %>%
+  select('.', everything())
+
+# Generating Table
+temp <- kable(temp, format = "html", row.names = FALSE)
+temp <- temp %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped") %>%
+  kable_styling(position = "center")
+
+temp
+
 ```
 
 ```{python}
@@ -1259,10 +1629,16 @@ for col in cols:
 
     print(f"\nComparisons for 'AcceptedCmpTotal' on {col}:")
     print("\nH Kruskal Wallis:\n")
-    display(result_kw)
+
+    headers = result_kw.columns
+    result_kw = tabulate(result_kw, headers, tablefmt="grid")
+    print(result_kw)
 
     print("\nGames Howell Pair Comparisons:\n")
-    display(result_pair)
+
+    headers = result_pair.columns
+    result_pair = tabulate(result_pair, headers, tablefmt="grid")
+    print(result_pair)
 ```
 
 # Conclusiones
