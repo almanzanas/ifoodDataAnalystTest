@@ -4,6 +4,13 @@ subtitle: "Analysis Report"
 author: "Alvaro Manzanas"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
+  rmdformats::html_clean:
+    code_folding: hide
+    self_contained: true
+    number_sections: true
+    thumbnails: false
+    lightbox: true
+    highlight: breezedark
   pdf_document:
     latex_engine: xelatex
     toc: true
@@ -11,12 +18,6 @@ output:
     number_sections: true
     keep_tex: false
     citation_package: natbib
-  rmdformats::html_clean:
-    code_folding: hide
-    self_contained: true
-    thumbnails: false
-    lightbox: true
-    highlight: breezedark
 pkgdown:
   as_is: true
 editor_options: 
@@ -38,13 +39,19 @@ knitr::opts_chunk$set(
   tidy = FALSE, comment = NA,
   message = FALSE, warning = FALSE, fig.align = "center"
 )
-opts_knit$set(width = 79)
+opts_knit$set(width = 90)
 reticulate::use_python("U:/Users/alvar/miniforge3/envs/learning")
-knitr::knit_engines$set(python.reticulate = FALSE)
+Sys.setenv(RETICULATE_PYTHON = "U:/Users/alvar/miniforge3/envs/learning")
+knitr::knit_engines$set(python = reticulate::eng_python)
+
+# Add to the exported html and put the tables inside:
+# <div style="display:flex;justify-content:center;align-items:center;">
 
 ```
 
 # Objectives {.unnumbered}
+
+#### Basics: {.unnumbered}
 
 Build an analysis to address the greatest benefit for the next direct marketing
 campaign (sixth) that aims to sell a new direct marketing campaign (sixth) that
@@ -55,6 +62,8 @@ aims to sell a new gadget gadget. Pilot campaign:
 -   Revenue generated: 3,674MU
 -   Overall profit: -3,046MU
 -   Success rate 15%.
+
+#### Advanced: {.unnumbered}
 
 Develop a model that predicts customer behaviour and apply it to the rest of
 the customer base to the rest of the customer base.
@@ -339,12 +348,13 @@ temp = data_excluded[["ID", "Year_Old", "Income",
 library(kableExtra)
 
 temp <- py$temp
-temp <- kable(temp)
-temp <- temp %>%
+# Generating Table
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 ```
@@ -521,17 +531,17 @@ temp <- py$temp
 temp_index = py$temp_index
 
 # Creating Index
-temp$Age_cat <- temp_index
+temp$'.' <- temp_index
 temp <- temp %>%
-  select(Age_cat, everything())
+  select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -576,12 +586,12 @@ temp <- temp %>%
   select(Age_cat, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -593,10 +603,10 @@ percentage of clients with different studies. The bulk are graduates but we
 should not underestimate PhD and Masters which between them also have a
 significant number of clients.
 
-``` python
+```{python}
 width = 0.2
 label = "Education"
-fig, ax = plt.subplots(figsize=(3,8))
+fig, ax = plt.subplots(figsize=(2,6))
 bottom = np.zeros(1)
 
 for boolean, values in frec_tab["frec_per"].items():
@@ -608,8 +618,6 @@ ax.legend(loc="upper right")
 ax.set_ylim(0,130);
 plt.show();
 ```
-
-![](images/clipboard-3932383584.png)
 
 ## Quantitative variables
 
@@ -656,12 +664,12 @@ temp <- temp %>%
   select(KS_test, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -792,15 +800,14 @@ temp <- temp %>%
   select(Columns, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
-
 ```
 
 If the above table with the descriptives is observed, it can be seen that the
@@ -880,12 +887,12 @@ temp <- temp %>%
   select(Columns, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -931,12 +938,12 @@ temp <- temp %>%
   select(Columns, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1201,12 +1208,12 @@ temp <- temp %>%
   select(Columns, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1263,6 +1270,13 @@ for col in cols_tt:
     )
 ```
 
+To begin the comparisons, it is observed that 20.68% of the sample accepted
+some campaign (out of the first 5 counted). It has been found in the sample
+that Group_Y has higher revenues with medium effect strength reaching large
+(d=0.778), and web and in-store purchases are also higher for Group_Y with
+medium effect strength in both (d=0.5; d=0.4). Then, the number of offers
+purchased is higher in Group_N although with a slight effect (d=0.2).
+
 ### Non-parametric pairwise comparison
 
 For the remaining variables that do not meet the assumptions, the Mann-Whitney
@@ -1315,6 +1329,18 @@ for col in cols_umw:
     )
 ```
 
+In this group of comparisons between those who did not accept campaigns
+(Group_N) and those who did (Group_Y), it can be seen that age is not a point
+to take into account as there are no differences between the groups. Where
+there is a difference is in the total spent and spent on wine, which Group_Y
+outperforms with a large effect (rbis=0.5; rbis=0.56). On the meat and gold
+products side, Group_Y is also superior with a medium effect (rbis=0.3;
+rbis=0.3). In the number of total purchases as well as the number of catalogue
+purchases, contrary to the relationships, the groups differ and Group_Y is
+higher with a medium effect (rbis=0.4; rbis=0.49). Finally, those who did not
+accept any campaign are observed to have more children than the other group
+with a medium effect (rbis=0.298).
+
 ```{python}
 result_mwu = pg.pairwise_tests(data=data, dv="MntSpentTotal", 
                                between="Response", parametric=False, 
@@ -1353,16 +1379,20 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
 ```
+
+In this last pairwise comparison, it can be seen that in the last campaign
+(sixth) the people who accepted the campaign are the ones who spend the most,
+results that are consistent with the previous comparisons.
 
 ### Multiple comparison
 
@@ -1444,12 +1474,12 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1490,12 +1520,12 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1538,16 +1568,25 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
 ```
+
+Comparing in more detail the customers according to the number of campaigns
+accepted, it could be reiterated that among those who have accepted 1 to 4
+campaigns the differences are either not significant, or if they are
+significant the strength of the effect is minimal. But the differences between
+those who accepted any campaign and those who did not take up any campaign are
+significant. The results are similar to the pairwise comparisons of the general
+group who accepted any campaign with those who did not, for more detail on all
+possible comparisons, the tables above may be helpful.
 
 And finally, comparing the number of campaigns accepted with the type of
 product on which they have spent the most.
@@ -1588,12 +1627,12 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1632,6 +1671,14 @@ for col in cols:
 
 # Conclusions
 
-Placeholder
+Starting with the relationships, it is generally observed that those with
+higher incomes spend the most. It can also be seen that customers spend the
+most on wine and meat products, in general buying through the catalogue. If we
+focus on those people who have accepted a campaign (Group_Y onwards), the more
+children they have at home, the less they consume, with the exception of offers
+whose relationship is higher than that of the group of people who did not
+accept campaigns (Group_N) (r=0.65; r=0.38). 
+
+It might be appropriate to focus the selection of customers for future campaigns on those with higher incomes (therefore, those who spend more) and who buy online. Also, if the subject of the campaign is wine, there could be more loyal customers from previous campaigns who would be encouraged to repeat. It would be possible to attract the attention of people who do not usually accept campaigns if the campaign is oriented towards children or related products. 
 
 # References

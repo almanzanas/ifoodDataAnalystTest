@@ -7,10 +7,10 @@ output:
   rmdformats::html_clean:
     code_folding: hide
     self_contained: true
+    number_sections: true
     thumbnails: false
     lightbox: true
     highlight: breezedark
-    use_bookdown: true
   pdf_document:
     latex_engine: xelatex
     toc: true
@@ -18,13 +18,13 @@ output:
     number_sections: true
     keep_tex: false
     citation_package: natbib
-    bibliography: references.bib
 pkgdown:
   as_is: true
 editor_options: 
   markdown: 
     wrap: 79
 bibliography: references.bib
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
@@ -33,19 +33,25 @@ library(rmdformats)
 library(reticulate)
 
 ## Global options
-options(max.print = "79")
+options(max.print = "90")
 knitr::opts_chunk$set(
   echo = TRUE, cache = FALSE, prompt = FALSE,
   tidy = FALSE, comment = NA,
   message = FALSE, warning = FALSE, fig.align = "center"
 )
-opts_knit$set(width = 79)
+opts_knit$set(width = 90)
 reticulate::use_python("U:/Users/alvar/miniforge3/envs/learning")
-knitr::knit_engines$set(python.reticulate = FALSE)
+Sys.setenv(RETICULATE_PYTHON = "U:/Users/alvar/miniforge3/envs/learning")
+knitr::knit_engines$set(python = reticulate::eng_python)
+
+# Add to the exported html and put the tables inside:
+# <div style="display:flex;justify-content:center;align-items:center;">
 
 ```
 
 # Objetivos {.unnumbered}
+
+#### Basicos: {.unnumbered}
 
 Construir un análisis para abordar el mayor beneficio para la próxima campaña
 de marketing directo (sexta) que tiene como objetivo la venta de un nuevo
@@ -58,12 +64,14 @@ gadget. Campaña piloto:
 -   3.046MU
 -   Éxito: 15%
 
+#### Avanzados: {.unnumbered}
+
 Desarrollar un modelo que prediga el comportamiento de los clientes y aplicarlo
 al resto de la base de clientes.
 
 -   Seleccionar a los clientes con más probabilidades de adquirir la oferta.
 -   Dejar fuera a los que no responden.
--   Rasgos característicos de los clientes dispuestos a comprar el gadget.
+-   Rasgos característicos de los clientes dispuestos a comprar el gadget. 
 
 # Data Cleaning
 
@@ -343,12 +351,14 @@ temp = data_excluded[["ID", "Year_Old", "Income",
 library(kableExtra)
 
 temp <- py$temp
-temp <- kable(temp)
-temp <- temp %>%
+
+# Generating Table
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 ```
@@ -526,17 +536,17 @@ temp <- py$temp
 temp_index = py$temp_index
 
 # Creating Index
-temp$Age_cat <- temp_index
+temp$'.' <- temp_index
 temp <- temp %>%
-  select(Age_cat, everything())
+  select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -581,12 +591,12 @@ temp <- temp %>%
   select(Age_cat, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -598,7 +608,7 @@ diferentes estudios como un grafico de barras apiladas. El grueso son graduados
 pero no habría que infravalorar PhD y Masters que entre ambos también tienen un
 importante número de clientes.
 
-``` python
+```{python}
 width = 0.2
 label = "Education"
 fig, ax = plt.subplots(figsize=(3,8))
@@ -613,8 +623,6 @@ ax.legend(loc="upper right")
 ax.set_ylim(0,130);
 plt.show();
 ```
-
-![](images/clipboard-3932383584.png)
 
 ## Variables Cuantitativas
 
@@ -661,12 +669,12 @@ temp <- temp %>%
   select(KS_test, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -797,12 +805,12 @@ temp <- temp %>%
   select(Columns, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -887,12 +895,12 @@ temp <- temp %>%
   select(Columns, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -938,12 +946,12 @@ temp <- temp %>%
   select(Columns, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1112,10 +1120,10 @@ plt.show()
 
 Las fuerzas de las relaciones son similares para las tres matrices de
 correlación. Se observa una mayor relación entre los ingresos que tienen los
-clientes con el total gastado así como en el número de compras efectuadas.
-Parece que el mayor número de compras se relaciona con las que se efectúan en
+clientes con el total gastado así como en el número de compras efectuadas. Se
+observa que el mayor número de compras se relaciona con las que se efectúan en
 directamente en la tienda, siendo el vino y la carne las de mayor costo, aunque
-en términos de dinero gastado parece relacionarse con las compras a través del
+en términos de dinero gastado se relaciona con las compras a través del
 catálogo. Luego, las ofertas se relacionan de forma negativa con aquellas
 personas que han aceptado alguna campaña, y también las ofer se ven
 relacionadas positivamente con los niños que tienen en casa.
@@ -1209,12 +1217,12 @@ temp <- temp %>%
   select(Columns, everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1273,6 +1281,14 @@ for col in cols_tt:
     )
 ```
 
+Para empezar las comparaciones, se observa que el 20.68% de la muestra aceptó
+alguna campaña (de las 5 primeras contabilizadas). Se ha encontrado en la
+muestra que el grupo que aceptó campañas tiene mayores ingresos con fuerza del
+efecto medio llegando a grande (d=0.778), y las compras por la web y en tienda
+también son mayores para el grupo que aceptó campañas con fuerza del efecto
+medio en ambos (d=0.5; d=0.4). Luego, el número de ofertas compradas si es
+mayor en el grupo que no aceptó campañas aunque con efecto leve (d=0.2).
+
 ### Comparación por pares no paramétrica
 
 Para el resto de las variables que no cumplen los supuestos se hará la prueba
@@ -1325,6 +1341,18 @@ for col in cols_umw:
     )
 ```
 
+En este grupo de comparaciones entre quienes no aceptaron campañas (Grupo_N) y
+aquellos que sí (Grupo_Y), se ve que la edad no es un punto a tener en cuenta
+ya que no hay diferencias entre los grupos. Donde sí hay diferencia es en el
+total gastado y gastado en vinos, que el Grupo_Y supera con un efecto grande
+(rbis=0.5; rbis=0.56). Por parte de los productos cárnicos y productos de oro,
+también el Grupo_Y es superior con efecto medio (rbis=0.3; rbis=0.3). En el
+número de compras totales como el número de compras por catálogo, al contrario
+que se mencionaba en las relaciones, los grupos difieren y el Grupo_Y es mayor
+con un efecto medio (rbis=0.4; rbis=0.49). Por último, aquellos que no
+aceptaron ninguna campaña se observa que tienen más hijos que el otro grupo con
+un efecto medio (rbis=0.298).
+
 ```{python}
 result_mwu = pg.pairwise_tests(data=data, dv="MntSpentTotal", 
                                between="Response", parametric=False, 
@@ -1338,12 +1366,12 @@ result_mwu = pd.concat([result_mwu, rbis], axis=1)
 result_mwu.columns = result_mwu.columns[:-1].tolist() + ["rbis"]
 
 print("MntSpentTotal mean in last campaign with no Acceptance:\n"
-      f"\t{data[data["Response"] == 0]["MntSpentTotal"].mean():.4f}")
-print("MntSpentTotal mean in last campaign with Acceptance:\n"
-      f"\t{data[data["Response"] == 1]["MntSpentTotal"].mean():.4f}\n")
-print("MntSpentTotal std in last campaign with no Acceptance:\n"
-      f"\t{data[data["Response"] == 0]["MntSpentTotal"].std():.4f}")
-print("MntSpentTotal std in last campaign with Acceptance:\n"
+      f"\t{data[data["Response"] == 0]["MntSpentTotal"].mean():.4f}"
+      "\nMntSpentTotal mean in last campaign with Acceptance:\n"
+      f"\t{data[data["Response"] == 1]["MntSpentTotal"].mean():.4f}\n"
+      "\nMntSpentTotal std in last campaign with no Acceptance:\n"
+      f"\t{data[data["Response"] == 0]["MntSpentTotal"].std():.4f}"
+      "\nMntSpentTotal std in last campaign with Acceptance:\n"
       f"\t{data[data["Response"] == 1]["MntSpentTotal"].std():.4f}\n")
 temp = result_mwu
 temp_index = list(temp.index.values)
@@ -1363,16 +1391,20 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
 ```
+
+En esta última comparación por pares se ve como en la última campaña (sexta)
+las personas que aceptaron la campaña son las que más gastan, resultados
+coherentes con las anteriores comparaciones.
 
 ### Comparación múltiple
 
@@ -1455,12 +1487,12 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1501,12 +1533,12 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1549,16 +1581,25 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
 ```
+
+Comparando más al detalle los clientes según el número de campañas aceptadas,
+se podría reiterar que entre aquellos que han aceptado de 1 a 4 campañas las
+diferencias o no son significativas, o si lo son la fuerza del efecto es
+mínima. Pero las diferencias entre quienes aceptaron alguna campaña con
+aquellos que no captaron ninguna campaña sí son relevantes. Los resultados son
+similares a las comparaciones por pares de grupo general que aceptó alguna
+campaña con los que no, para más detalle en todas las comparaciones posibles,
+las tablas anteriores pueden servir de ayuda.
 
 Y por último, comparando en número de campañas aceptadas con el tipo de
 producto en el que más han gastado.
@@ -1599,12 +1640,12 @@ temp <- temp %>%
   select('.', everything())
 
 # Generating Table
-temp <- kable(temp, format = "html", row.names = FALSE)
-temp <- temp %>%
+temp <- kable(temp, row.names = FALSE) %>%
   kable_styling(full_width = FALSE) %>%
   row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
-  kable_styling(latex_options = "striped") %>%
-  kable_styling(position = "center")
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
 
 temp
 
@@ -1620,7 +1661,7 @@ for col in cols:
                         between="AcceptedCmpTotal")
 
     result_pair = pg.pairwise_gameshowell(data=data, 
-                                        dv="NumCatalogPurchases", 
+                                        dv=col, 
                                         between="AcceptedCmpTotal",
                                         effsize="eta-square")
 
@@ -1643,6 +1684,21 @@ for col in cols:
 
 # Conclusiones
 
-Placeholder
+En las relaciones, se observa de manera general que aquellas
+personas que tienen mayores ingresos son las que más gastan. También se puede
+ver como los mayores gastos de los clientes son en vino y productos cárnicos,
+en general comprando a través del catálogo. Si nos centramos en aquellas
+personas que han aceptado alguna campaña (Grupo_Y en adelante), cuantos más
+niños tienen en casa menos consumen con la excepción de las ofertas cuya
+relación es mayor que del grupo de personas que no aceptaron campañas (Grupo_N)
+(r=0.65; r=0.38).
+
+Podría ser adecuado orientar la selección de clientes para próximas campañas en 
+aquellos con mayores ingresos (por lo tanto, que más gastan) y que compren por 
+la web. También, si aquello de lo que se hace la campaña son vinos, podría 
+haber más clientes fieles de anteriores campañas que se animaran a repetir. 
+Sería posible llamar la atención de las personas que no suelen aceptar 
+campañas si ésta se realiza con orientación a los hijos o 
+productos relacionados. 
 
 # Referencias
