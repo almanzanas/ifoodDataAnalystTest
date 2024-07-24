@@ -1408,8 +1408,8 @@ with cut-off points at 0.04: minimum necessary, 0.25: moderate, 0.64: strong
 data["cmp_accp"] = np.where(data["AcceptedCmpTotal"] > 0, 1, 0)
 ```
 
-Comenzando por los grupos en los que no se ha visto que haya diferencias entre
-sus categorías, están 'Recency', 'Recency_cat' y 'Marital_Status'.
+Starting with the groups where no differences between their categories have been
+found, there are ‘Recency’, ‘Recency_cat’ and ‘Marital_Status’.
 
 ```{python, class.source = "fold-show"}
 result_kw1 = pg.kruskal(data=data, 
@@ -1579,18 +1579,6 @@ temp
 
 ```
 
-Comparing in more detail the customers according to the number of campaigns
-accepted, it could be reiterated that among those who have accepted 1 to 4
-campaigns the differences are either not significant, or if they are
-significant the strength of the effect is minimal. But the differences between
-those who accepted any campaign and those who did not take up any campaign are
-significant. The results are similar to the pairwise comparisons of the general
-group who accepted any campaign with those who did not, for more detail on all
-possible comparisons, the tables above may be helpful.
-
-And finally, comparing the number of campaigns accepted with the type of
-product on which they have spent the most.
-
 ```{python}
 result_kw = pg.kruskal(data=data, 
                        dv="MntSpentTotal", 
@@ -1638,38 +1626,18 @@ temp
 
 ```
 
-```{python}
-cols = ["MntWines", "MntFruits", "MntMeatProducts", 
-        "MntFishProducts", "MntSweetProducts", "MntGoldProds"]
-
-for col in cols:
-    result_kw = pg.kruskal(data=data, 
-                        dv=col, 
-                        between="AcceptedCmpTotal")
-
-    result_pair = pg.pairwise_gameshowell(data=data, 
-                                        dv="NumCatalogPurchases", 
-                                        between="AcceptedCmpTotal",
-                                        effsize="eta-square")
-
-    result_kw = round(result_kw, 4)
-    result_pair = round(result_pair, 4)
-
-    print(f"\nComparisons for 'AcceptedCmpTotal' on {col}:")
-    print("\nH Kruskal Wallis:\n")
-
-    headers = result_kw.columns
-    result_kw = tabulate(result_kw, headers, tablefmt="grid")
-    print(result_kw)
-
-    print("\nGames Howell Pair Comparisons:\n")
-
-    headers = result_pair.columns
-    result_pair = tabulate(result_pair, headers, tablefmt="grid")
-    print(result_pair)
-```
+Comparing in more detail the customers according to the number of campaigns
+accepted, it could be reiterated that among those who have accepted 1 to 4
+campaigns the differences are either not significant, or if they are
+significant the strength of the effect is minimal. But the differences between
+those who accepted any campaign and those who did not take up any campaign are
+significant. The results are similar to the pairwise comparisons of the general
+group who accepted any campaign with those who did not, for more detail on all
+possible comparisons, the tables above may be helpful.
 
 # Conclusions
+
+#### Basics: {.unnumbered}
 
 Starting with the relationships, it is generally observed that those with
 higher incomes spend the most. It can also be seen that customers spend the

@@ -1449,7 +1449,7 @@ print("MntSpentTotal on Recency_cat and Marital_Status; "
 
 ```
 
-Las siguientes comparaciones serán en torno a cuántas campañas han aceptado los
+Las siguientes comparaciones serán en torno a cuantas campañas han aceptado los
 clientes, siendo de 0 a 4, en diferentes variables.
 
 ```{python}
@@ -1592,18 +1592,6 @@ temp
 
 ```
 
-Comparando más al detalle los clientes según el número de campañas aceptadas,
-se podría reiterar que entre aquellos que han aceptado de 1 a 4 campañas las
-diferencias o no son significativas, o si lo son la fuerza del efecto es
-mínima. Pero las diferencias entre quienes aceptaron alguna campaña con
-aquellos que no captaron ninguna campaña sí son relevantes. Los resultados son
-similares a las comparaciones por pares de grupo general que aceptó alguna
-campaña con los que no, para más detalle en todas las comparaciones posibles,
-las tablas anteriores pueden servir de ayuda.
-
-Y por último, comparando en número de campañas aceptadas con el tipo de
-producto en el que más han gastado.
-
 ```{python}
 result_kw = pg.kruskal(data=data, 
                        dv="MntSpentTotal", 
@@ -1651,38 +1639,18 @@ temp
 
 ```
 
-```{python}
-cols = ["MntWines", "MntFruits", "MntMeatProducts", 
-        "MntFishProducts", "MntSweetProducts", "MntGoldProds"]
-
-for col in cols:
-    result_kw = pg.kruskal(data=data, 
-                        dv=col, 
-                        between="AcceptedCmpTotal")
-
-    result_pair = pg.pairwise_gameshowell(data=data, 
-                                        dv=col, 
-                                        between="AcceptedCmpTotal",
-                                        effsize="eta-square")
-
-    result_kw = round(result_kw, 4)
-    result_pair = round(result_pair, 4)
-
-    print(f"\nComparisons for 'AcceptedCmpTotal' on {col}:")
-    print("\nH Kruskal Wallis:\n")
-
-    headers = result_kw.columns
-    result_kw = tabulate(result_kw, headers, tablefmt="grid")
-    print(result_kw)
-
-    print("\nGames Howell Pair Comparisons:\n")
-
-    headers = result_pair.columns
-    result_pair = tabulate(result_pair, headers, tablefmt="grid")
-    print(result_pair)
-```
+Comparando más al detalle los clientes según el número de campañas aceptadas,
+se podría reiterar que entre aquellos que han aceptado de 1 a 4 campañas las
+diferencias o no son significativas, o si lo son la fuerza del efecto es
+mínima. Pero las diferencias entre quienes aceptaron alguna campaña con
+aquellos que no captaron ninguna campaña sí son relevantes. Los resultados son
+similares a las comparaciones por pares de grupo general que aceptó alguna
+campaña con los que no, para más detalle en todas las comparaciones posibles,
+las tablas anteriores pueden servir de ayuda.
 
 # Conclusiones
+
+#### Basicas: {.unnumbered}
 
 En las relaciones, se observa de manera general que aquellas
 personas que tienen mayores ingresos son las que más gastan. También se puede
