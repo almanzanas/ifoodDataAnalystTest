@@ -1648,6 +1648,10 @@ similares a las comparaciones por pares de grupo general que aceptó alguna
 campaña con los que no, para más detalle en todas las comparaciones posibles,
 las tablas anteriores pueden servir de ayuda.
 
+# Análisis Predictivo
+
+
+
 # Conclusiones
 
 #### Basicas: {.unnumbered}
