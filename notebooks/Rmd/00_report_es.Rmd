@@ -71,7 +71,36 @@ al resto de la base de clientes.
 
 -   Seleccionar a los clientes con más probabilidades de adquirir la oferta.
 -   Dejar fuera a los que no responden.
--   Rasgos característicos de los clientes dispuestos a comprar el gadget. 
+-   Rasgos característicos de los clientes dispuestos a comprar el gadget.
+
+# Session Info {.unnumbered}
+
+```         
+-----
+datetime    NA
+json        2.0.9
+matplotlib  3.9.1
+numpy       2.0.1
+pandas      2.2.2
+pathlib     NA
+pingouin    0.5.4
+psutil      6.0.0
+pydotplus   NA
+scipy       1.14.0
+seaborn     0.13.2
+sinfo       0.3.1
+sklearn     1.5.1
+statsmodels 0.14.2
+tabulate    0.9.0
+torch       2.4.0
+warnings    NA
+-----
+IPython             8.26.0
+jupyter_client      8.6.2
+jupyter_core        5.7.2
+-----
+Python 3.12.4 | packaged by conda-forge | (main, Jun 17 2024, 10:04:44) [MSC v.1940 64 bit (AMD64)] Windows-10-10.0.19045-SP0
+```
 
 # Data Cleaning
 
@@ -1650,27 +1679,142 @@ las tablas anteriores pueden servir de ayuda.
 
 # Análisis Predictivo
 
+Con el objetivo de predecir el comportamiento de los clientes para poder así
+seleccionar aquellos clientes que tengan más probabilidades de adquirir una
+oferta (aceptar próximas campañas) se han utilizado varios modelos de
+predicción. Los modelos utilizados son:
 
+-   Stepwise Regression
+-   Decisions Trees
+-   Random Forest
+-   Gradient Boosting
+-   k-Nearest Neighbors
+-   Support Vector Machines
+-   Neural Networks
+
+La variable a predecir (y) es la correspondiente a la sexta campaña 'Response',
+variable dicotómica siendo 0 la negativa a la campaña y 1 la aceptación de la
+misma.
+
+Al realizar la regresión lineal múltiple por pasos como mejores variables
+predictoras (X) se obtuvieron las 12 siguientes: 'MntWines',
+'NumStorePurchases', 'Z_CostContact', 'Z_Revenue', 'ChildrenHome', 'Recency',
+'Income_cat_enc', 'Year_Old', 'NumCatalogPurchases', 'MntFishProducts',
+'Education_enc' y 'AcceptedCmpTotal'. Son las variables que se utilizarán para
+todos los modelos, probando con el resto de variables que se han considerado
+importantes como predictoras en ocasiones pero se ha observado en las pruebas
+que no aporta a la predicción.
+
+Teniendo en cuenta el tamaño de la muestra e intentando evitar todo el
+solapamiento posible, se ha ido variando el los parámetros que componen cada
+modelo para encontrar el tamaño de la muestra de entrenamiento y prueba
+adecuados con los mejores resultados. En la siguiente tabla se pueden encontrar
+parte de los resultados para cada modelo:
+
+| Model           | Accuracy | Precision | Recall | F1-Score | MSE   | MAE   | RMSE  | R^2^  | AUC   |
+|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
+| **Sw. Reg.**    |          |           |        |          |       |       |       | 0.304 |       |
+| **D. Trees**    |          |           |        |          | 0.105 | 0.199 | 0.209 |       |       |
+| **R. Forest**   | 0.90     | 0.773     | 0.31   | 0.44     | 0.098 | 0.098 | 0.312 | 0.902 | 0.85  |
+| **G. Boosting** | 0.884    | 0.737     | 0.389  | 0.509    | 0.116 | 0.116 | 0.341 | 0.884 | 0.83  |
+| **kNN**         | 0.821    | 0.343     | 0.167  | 0.224    | 0.179 | 0.179 | 0.423 | 0.821 |       |
+| **SVM**         | 0.87     | 0.682     | 0.224  | 0.337    | 0.134 | 0.134 | 0.366 | 0.866 | 0.83  |
+| **NN**          | 0.809    | 0.700     | 0.329  | 0.448    | 0.116 | 0.128 | 0.357 | 0.053 | 0.844 |
+
+Teniendo en cuenta los valores anteriores, destacar el Accuracy de todos los
+modelos en general que superan el 0,8 hasta 0.9, siendo los valores más
+elevados y cercanos a 1 mejor. Por otra parte, también se ha obtenido un
+coeficiente R^2^ elevado en Random Forest, Gradient Boosting, kNN y SVM,
+indicando como el modelo se ajusta a los datos, siendo la variabilidad
+explicada de estos.
+
+Además, se tendrá en cuenta la importancia de las características para las
+predicciones, esto refleja qué variables de los clientes serían las más
+importantes según los análisis para la decisión de aceptar o no la siguiente
+campaña. La siguiente tabla lista las características más importantes y su
+nivel de importancia:
+
+| Característica          | D. Trees | R. Forest | G. Boosting | SVM     |
+|-------------------------|----------|-----------|-------------|---------|
+| **AcceptedCmpTotal**    | 0.656903 | 0.263579  | 0.351229    | 0.6952  |
+| **Recency**             | 0.237129 | 0.170859  | 0.190092    | -0.0099 |
+| **MntWines**            | 0.058948 | 0.152675  | 0.103166    | 0.0002  |
+| **NumCatalogPurchases** | 0.047021 | 0.081172  | 0.082730    | 0.0421  |
+| **NumStorePurchases**   | 0\.      | 0.072055  | 0.085088    | -0.0699 |
+| **Year_Old**            | 0\.      | 0.071732  | 0.055492    | -0.0032 |
+
+Se puede observar como de forma consistente la característica con más
+importancia para tener en cuenta la predicción es 'AcceptedCmpTotal' o el
+número total de campañas aceptadas por el cliente. Le sigue 'Recency' o tiempo
+que ha transcurrido desde la ultima compra, 'MntWines' o dinero gastado en
+vinos, y 'NumCatalogPurchases' como número de compras a través del catálogo. La
+importancia de estas tres últimas sigue el mismo orden salvo por las compras a
+través del catálogo que en Gradient Boosting le supera las compras a través de
+la tienda, pero sólo por 0.002. Así mismo, los valores de importancia son muy
+bajos salvo por el número total de campañas aceptadas que oscila ente 0.26 y
+0.69.
+
+Antes de entrar en detalle con los modelos más relevantes, todos los análisis
+están desarrollados en el Notebook de jupyter 04_predictive.ipynb.
+
+## Modelos destacados
+
+### Random Forest
+
+Random Forest con la muestra empleada es el modelo con mayor accuracy y
+coeficiente de determinación R^2^ para la predicción de 'Response'. Su matriz
+de confusión muestra que de las predicciones el 0.3 son Verdaderas Positivas y
+el 0.01 Falsas Positivas, mientras que las Verdaderas Negativas son 0.98 y
+Falsas negativas 0.69. Relativo a lo mencionado, el Area bajo la curva (AUC) de
+la curva ROC es de 0.85, mostrando como de probable es que el modelo haga
+correcta la clasificación.
+
+Importancia de las características según Random Forest:
+![](images/clipboard-2435151577.png)
+
+En la muestra de prueba total de 441 clientes para Random Forest, 55 de ellos
+fueron los que aceptaron la proxima campaña. Se obtiene un recall de 0.31 y
+precision de 0.77, siendo la habilidad para detectar los positivos reales y la
+proporción de prediciones correctas en general respectivamente.
+
+Arbol de decisión para Random Forest: ![](images/clipboard-1976038787.png)
+
+### Gradient Boosting
+
+Con Gradient Boosting en la precisión se obtienen menores valores para accuracy
+y R2 (0.88; 0.88), pero así mismo la predicción parece ser más precisa
+obteniendo un valor F1-score de 0.50 en comparación de 0.44 del Random forest,
+mostrando que recall y precision son más equilibradas. El recall en este caso
+es superior, de 0.40 mientras de disminuye la precision a 0.69. Se refleja en
+la matriz de confusión que los Verdaderos Positivos y Falsos Positivos son 0.40
+y 0.038 respectivamente, mientras que los Verdaderos Negativos y Falsos
+Negativos son 0.96 y 0.59.
+
+Importancia de las características según Gradient Boosting (con XGBoost):
+![](images/clipboard-452312388.png)
+
+Importancia de las características según Gradient Boosting:
+![](images/clipboard-3667380716.png)
+
+Arbol de decisiones para Gradient Boosting: ![](images/clipboard-209707449.png)
 
 # Conclusiones
 
 #### Basicas: {.unnumbered}
 
-En las relaciones, se observa de manera general que aquellas
-personas que tienen mayores ingresos son las que más gastan. También se puede
-ver como los mayores gastos de los clientes son en vino y productos cárnicos,
-en general comprando a través del catálogo. Si nos centramos en aquellas
-personas que han aceptado alguna campaña (Grupo_Y en adelante), cuantos más
-niños tienen en casa menos consumen con la excepción de las ofertas cuya
-relación es mayor que del grupo de personas que no aceptaron campañas (Grupo_N)
-(r=0.65; r=0.38).
+En las relaciones, se observa de manera general que aquellas personas que
+tienen mayores ingresos son las que más gastan. También se puede ver como los
+mayores gastos de los clientes son en vino y productos cárnicos, en general
+comprando a través del catálogo. Si nos centramos en aquellas personas que han
+aceptado alguna campaña (Grupo_Y en adelante), cuantos más niños tienen en casa
+menos consumen con la excepción de las ofertas cuya relación es mayor que del
+grupo de personas que no aceptaron campañas (Grupo_N) (r=0.65; r=0.38).
 
-Podría ser adecuado orientar la selección de clientes para próximas campañas en 
-aquellos con mayores ingresos (por lo tanto, que más gastan) y que compren por 
-la web. También, si aquello de lo que se hace la campaña son vinos, podría 
-haber más clientes fieles de anteriores campañas que se animaran a repetir. 
-Sería posible llamar la atención de las personas que no suelen aceptar 
-campañas si ésta se realiza con orientación a los hijos o 
-productos relacionados. 
+Podría ser adecuado orientar la selección de clientes para próximas campañas en
+aquellos con mayores ingresos (por lo tanto, que más gastan) y que compren por
+la web. También, si aquello de lo que se hace la campaña son vinos, podría
+haber más clientes fieles de anteriores campañas que se animaran a repetir.
+Sería posible llamar la atención de las personas que no suelen aceptar campañas
+si ésta se realiza con orientación a los hijos o productos relacionados.
 
 # Referencias
