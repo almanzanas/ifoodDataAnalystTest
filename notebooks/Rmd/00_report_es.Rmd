@@ -11,6 +11,7 @@ output:
     thumbnails: false
     lightbox: true
     highlight: breezedark
+    df_print: kable
   pdf_document:
     latex_engine: xelatex
     toc: true
@@ -1710,15 +1711,32 @@ modelo para encontrar el tamaño de la muestra de entrenamiento y prueba
 adecuados con los mejores resultados. En la siguiente tabla se pueden encontrar
 parte de los resultados para cada modelo:
 
-| Model           | Accuracy | Precision | Recall | F1-Score | MSE   | MAE   | RMSE  | R^2^  | AUC   |
-|-----------------|----------|-----------|--------|----------|-------|-------|-------|-------|-------|
-| **Sw. Reg.**    |          |           |        |          |       |       |       | 0.304 |       |
-| **D. Trees**    |          |           |        |          | 0.105 | 0.199 | 0.209 |       |       |
-| **R. Forest**   | 0.90     | 0.773     | 0.31   | 0.44     | 0.098 | 0.098 | 0.312 | 0.902 | 0.85  |
-| **G. Boosting** | 0.884    | 0.737     | 0.389  | 0.509    | 0.116 | 0.116 | 0.341 | 0.884 | 0.83  |
-| **kNN**         | 0.821    | 0.343     | 0.167  | 0.224    | 0.179 | 0.179 | 0.423 | 0.821 |       |
-| **SVM**         | 0.87     | 0.682     | 0.224  | 0.337    | 0.134 | 0.134 | 0.366 | 0.866 | 0.83  |
-| **NN**          | 0.809    | 0.700     | 0.329  | 0.448    | 0.116 | 0.128 | 0.357 | 0.053 | 0.844 |
+```{r}
+library(kableExtra)
+library(dplyr)
+
+table <- data.frame(
+  Model = c("Sw. Reg.", "D. Trees", "R. Forest", "G. Boosting", "kNN", "SVM", "NN"),
+  Accuracy = c("", "", 0.90, 0.884, 0.821, 0.87, 0.809),
+  Precision = c("", "", 0.773, 0.737, 0.343, 0.682, 0.700),
+  Recall = c("", "", 0.31, 0.389, 0.167, 0.224, 0.329),
+  `F1-Score` = c("", "", 0.44, 0.509, 0.224, 0.337, 0.448),
+  MSE = c("", 0.105, 0.098, 0.116, 0.179, 0.134, 0.116),
+  MAE = c("", 0.199, 0.098, 0.116, 0.179, 0.134, 0.128),
+  RMSE = c("", 0.209, 0.312, 0.341, 0.423, 0.366, 0.357),
+  `R^2^` = c(0.304, "", 0.902, 0.884, 0.821, 0.866, 0.053),
+  AUC = c("", "", 0.85, 0.83, "", 0.83, 0.844)
+)
+
+table <- kable(table, row.names = FALSE) %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
+
+table
+```
 
 Teniendo en cuenta los valores anteriores, destacar el *Accuracy* de todos los
 modelos en general que superan el 0,8 hasta 0.9, siendo los valores más
@@ -1733,14 +1751,24 @@ importantes según los análisis para la decisión de aceptar o no la siguiente
 campaña. La siguiente tabla lista las características más importantes y su
 nivel de importancia:
 
-| Característica          | D. Trees | R. Forest | G. Boosting | SVM     |
-|-------------------------|----------|-----------|-------------|---------|
-| **AcceptedCmpTotal**    | 0.656903 | 0.263579  | 0.351229    | 0.6952  |
-| **Recency**             | 0.237129 | 0.170859  | 0.190092    | -0.0099 |
-| **MntWines**            | 0.058948 | 0.152675  | 0.103166    | 0.0002  |
-| **NumCatalogPurchases** | 0.047021 | 0.081172  | 0.082730    | 0.0421  |
-| **NumStorePurchases**   | 0\.      | 0.072055  | 0.085088    | -0.0699 |
-| **Year_Old**            | 0\.      | 0.071732  | 0.055492    | -0.0032 |
+```{r}
+table <- data.frame(
+  Característica = c("AcceptedCmpTotal", "Recency", "MntWines", "NumCatalogPurchases", "NumStorePurchases", "Year_Old"),
+  `D. Trees` = c(0.656903, 0.237129, 0.058948, 0.047021, NA, NA),
+  `R. Forest` = c(0.263579, 0.170859, 0.152675, 0.081172, 0.072055, 0.071732),
+  `G. Boosting` = c(0.351229, 0.190092, 0.103166, 0.082730, 0.085088, 0.055492),
+  SVM = c(0.6952, -0.0099, 0.0002, 0.0421, -0.0699, -0.0032)
+)
+
+table <- kable(table, row.names = FALSE) %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, color = "#ffffff", background = "#232629") %>%
+  kable_styling(latex_options = "striped", 
+                position = "center", 
+                bootstrap_options = c("striped", "hover", "condensed"))
+
+table
+```
 
 Se puede observar como de forma consistente la característica con más
 importancia para tener en cuenta la predicción es 'AcceptedCmpTotal' o el
