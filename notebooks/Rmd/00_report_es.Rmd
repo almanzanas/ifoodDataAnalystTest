@@ -51,7 +51,7 @@ knitr::knit_engines$set(python = reticulate::eng_python)
 
 # Objetivos {.unnumbered}
 
-#### Basicos: {.unnumbered}
+#### Básicos: {.unnumbered}
 
 Construir un análisis para abordar el mayor beneficio para la próxima campaña
 de marketing directo (sexta) que tiene como objetivo la venta de un nuevo
@@ -60,8 +60,7 @@ gadget. Campaña piloto:
 -   2240 clientes
 -   Coste de la campaña de muestra: 6.720MU (millones de euros)
 -   Ingresos generados: 3.674MU
--   Beneficio global:
--   3.046MU
+-   Beneficio global: -3.046MU
 -   Éxito: 15%
 
 #### Avanzados: {.unnumbered}
@@ -1712,7 +1711,7 @@ adecuados con los mejores resultados. En la siguiente tabla se pueden encontrar
 parte de los resultados para cada modelo:
 
 | Model           | Accuracy | Precision | Recall | F1-Score | MSE   | MAE   | RMSE  | R^2^  | AUC   |
-|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
+|-----------------|----------|-----------|--------|----------|-------|-------|-------|-------|-------|
 | **Sw. Reg.**    |          |           |        |          |       |       |       | 0.304 |       |
 | **D. Trees**    |          |           |        |          | 0.105 | 0.199 | 0.209 |       |       |
 | **R. Forest**   | 0.90     | 0.773     | 0.31   | 0.44     | 0.098 | 0.098 | 0.312 | 0.902 | 0.85  |
@@ -1721,7 +1720,7 @@ parte de los resultados para cada modelo:
 | **SVM**         | 0.87     | 0.682     | 0.224  | 0.337    | 0.134 | 0.134 | 0.366 | 0.866 | 0.83  |
 | **NN**          | 0.809    | 0.700     | 0.329  | 0.448    | 0.116 | 0.128 | 0.357 | 0.053 | 0.844 |
 
-Teniendo en cuenta los valores anteriores, destacar el Accuracy de todos los
+Teniendo en cuenta los valores anteriores, destacar el *Accuracy* de todos los
 modelos en general que superan el 0,8 hasta 0.9, siendo los valores más
 elevados y cercanos a 1 mejor. Por otra parte, también se ha obtenido un
 coeficiente R^2^ elevado en Random Forest, Gradient Boosting, kNN y SVM,
@@ -1761,11 +1760,11 @@ están desarrollados en el Notebook de jupyter 04_predictive.ipynb.
 
 ### Random Forest
 
-Random Forest con la muestra empleada es el modelo con mayor accuracy y
+Random Forest con la muestra empleada es el modelo con mayor *accuracy* y
 coeficiente de determinación R^2^ para la predicción de 'Response'. Su matriz
 de confusión muestra que de las predicciones el 0.3 son Verdaderas Positivas y
 el 0.01 Falsas Positivas, mientras que las Verdaderas Negativas son 0.98 y
-Falsas negativas 0.69. Relativo a lo mencionado, el Area bajo la curva (AUC) de
+Falsas negativas 0.69. Relativo a lo mencionado, el Área bajo la curva (AUC) de
 la curva ROC es de 0.85, mostrando como de probable es que el modelo haga
 correcta la clasificación.
 
@@ -1773,34 +1772,32 @@ Importancia de las características según Random Forest:
 ![](images/clipboard-2435151577.png)
 
 En la muestra de prueba total de 441 clientes para Random Forest, 55 de ellos
-fueron los que aceptaron la proxima campaña. Se obtiene un recall de 0.31 y
-precision de 0.77, siendo la habilidad para detectar los positivos reales y la
-proporción de prediciones correctas en general respectivamente.
+fueron los que aceptaron la próxima campaña. Se obtiene un *recall* de 0.31 y
+*precision* de 0.77, siendo la habilidad para detectar los positivos reales y
+la proporción de predicciones correctas en general respectivamente.
 
 Arbol de decisión para Random Forest: ![](images/clipboard-1976038787.png)
 
 ### Gradient Boosting
 
-Con Gradient Boosting en la precisión se obtienen menores valores para accuracy
-y R2 (0.88; 0.88), pero así mismo la predicción parece ser más precisa
-obteniendo un valor F1-score de 0.50 en comparación de 0.44 del Random forest,
-mostrando que recall y precision son más equilibradas. El recall en este caso
-es superior, de 0.40 mientras de disminuye la precision a 0.69. Se refleja en
-la matriz de confusión que los Verdaderos Positivos y Falsos Positivos son 0.40
-y 0.038 respectivamente, mientras que los Verdaderos Negativos y Falsos
-Negativos son 0.96 y 0.59.
+Con Gradient Boosting en la precisión se obtienen menores valores para
+*accuracy* y R2 (0.88; 0.88), pero así mismo la predicción parece ser más
+precisa obteniendo un valor F1-score de 0.50 en comparación de 0.44 del Random
+forest, mostrando que *recall* y *precision* son más equilibradas. El *recall*
+en este caso es superior, de 0.40 mientras de disminuye la *precision* a 0.69.
+Se refleja en la matriz de confusión que los Verdaderos Positivos y Falsos
+Positivos son 0.40 y 0.038 respectivamente, mientras que los Verdaderos
+Negativos y Falsos Negativos son 0.96 y 0.59.
 
-Importancia de las características según Gradient Boosting (con XGBoost):
+Importancia de las características según Gradient Boosting (XGBoost):
 ![](images/clipboard-452312388.png)
 
-Importancia de las características según Gradient Boosting:
-![](images/clipboard-3667380716.png)
+Importancia de las características según Gradient Boosting
+(GradientBoostingClassifier): ![](images/clipboard-3667380716.png)
 
 Arbol de decisiones para Gradient Boosting: ![](images/clipboard-209707449.png)
 
 # Conclusiones
-
-#### Basicas: {.unnumbered}
 
 En las relaciones, se observa de manera general que aquellas personas que
 tienen mayores ingresos son las que más gastan. También se puede ver como los
@@ -1816,5 +1813,43 @@ la web. También, si aquello de lo que se hace la campaña son vinos, podría
 haber más clientes fieles de anteriores campañas que se animaran a repetir.
 Sería posible llamar la atención de las personas que no suelen aceptar campañas
 si ésta se realiza con orientación a los hijos o productos relacionados.
+
+Teniendo en cuenta los modelos para predecir el comportamiento del consumidor y
+así seleccionar los clientes con mayor probabilidad de adquirir la oferta para
+la próxima campaña, se puede observar que los resultados no son muy
+alentadores. Aunque el valor *accuracy* para los modelos es elevado, en el
+momento de valorar la matriz de confusión y otras métricas como *precision* o
+*recall*, se puede observar que no tienen un gran porcentaje de aciertos,
+aunque los que tengan es poco probable que sean falsos positivos.
+
+Por otra parte, tanto para Random Forest como Gradient Boosting, gracias a la
+matriz de confusión que refleja la probabilidad de verdaderos y falsos
+positivos, se puede observar que en ambos modelos aunque la probabilidad de
+hallar un positivo es baja (0.3 o 0.4 respectivamente), cuando se consigue es
+muy probable que sea un verdadero positivo ya que los falsos positivos tienen
+una probabilidad escasa (0.01 y 0.03 respectivamente). Lo opuesto pasa cuando
+el resultado es negativo, que aunque sea muy probable hallar un verdadero
+negativo, los falsos negativos superan al azar.
+
+Si a la hora de elegir los clientes más afines a aceptar la campaña,
+hipotéticamente hablando, conseguimos localizar ese 0.3 de verdaderos
+positivos, ya sería una mejora respecto a los resultados de la muestra en la
+campaña piloto que tuvo un éxito del 15%. Para ello se obtuvieron los arboles
+de decisiones de ambos modelos.
+
+Para ejemplificar la toma de decisiones de los clientes potenciales, teniendo
+en cuenta el árbol de decisión de Random Forest, los clientes más afines a
+aceptar la próxima campaña serían aquellos que tengan en 'Recency' un valor
+entre 24.5-94.5, de estos que en 'MntWines' hayan gastado menos de 895 y luego
+aceptaran menos de 3 campañas o en 'NumCatalogPurchases' tenga preferiblemente
+un valor superior a 3.5. Se podría filtrar por con estas especificaciones en
+las variables dadas para obtener una muestra de clientes a quienes contactar.
+
+Por último, como limitación principal mencionar el tamaño de la muestra (2240)
+sobre todo para la realización de predicciones, ya que, como se mencionaba
+anteriormente, sólo una pequeña parte de los clientes aceptaron alguna campaña
+en esta muestra piloto. A futuro, si se implementa una nueva campaña con su
+respectivo registro de clientes, se puede usar la muestra para seguir
+entrenando los modelos y conseguir una predicción más segura.
 
 # Referencias

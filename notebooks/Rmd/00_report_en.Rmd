@@ -72,6 +72,35 @@ the customer base to the rest of the customer base.
 -   Exclude non-responders.
 -   Characteristic traits of customers willing to buy the gadget.
 
+# Session Info {.unnumbered}
+
+```         
+-----
+datetime    NA
+json        2.0.9
+matplotlib  3.9.1
+numpy       2.0.1
+pandas      2.2.2
+pathlib     NA
+pingouin    0.5.4
+psutil      6.0.0
+pydotplus   NA
+scipy       1.14.0
+seaborn     0.13.2
+sinfo       0.3.1
+sklearn     1.5.1
+statsmodels 0.14.2
+tabulate    0.9.0
+torch       2.4.0
+warnings    NA
+-----
+IPython             8.26.0
+jupyter_client      8.6.2
+jupyter_core        5.7.2
+-----
+Python 3.12.4 | packaged by conda-forge | (main, Jun 17 2024, 10:04:44) [MSC v.1940 64 bit (AMD64)] Windows-10-10.0.19045-SP0
+```
+
 # Data Cleaning
 
 ```{python, include=FALSE}
@@ -1408,8 +1437,8 @@ with cut-off points at 0.04: minimum necessary, 0.25: moderate, 0.64: strong
 data["cmp_accp"] = np.where(data["AcceptedCmpTotal"] > 0, 1, 0)
 ```
 
-Starting with the groups where no differences between their categories have been
-found, there are ‘Recency’, ‘Recency_cat’ and ‘Marital_Status’.
+Starting with the groups where no differences between their categories have
+been found, there are ‘Recency’, ‘Recency_cat’ and ‘Marital_Status’.
 
 ```{python, class.source = "fold-show"}
 result_kw1 = pg.kruskal(data=data, 
@@ -1635,9 +1664,121 @@ significant. The results are similar to the pairwise comparisons of the general
 group who accepted any campaign with those who did not, for more detail on all
 possible comparisons, the tables above may be helpful.
 
-# Conclusions
+# Predictive Analysis
 
-#### Basics: {.unnumbered}
+To predict customer behaviour in order to select those customers who are most
+likely to purchase an offer (accept upcoming campaigns), several predictive
+models have been used. The models used are:
+
+-   Stepwise Regression
+-   Decisions Trees
+-   Random Forest
+-   Gradient Boosting
+-   k-Nearest Neighbors
+-   Support Vector Machines
+-   Neural Networks
+
+The variable to be predicted (y) is the one corresponding to the sixth campaign
+'Response', a dichotomous variable with 0 being the refusal of the campaign and
+1 the acceptance of it.
+
+The following 12 variables were obtained as the best predictor variables (X) in
+the stepwise multiple linear regression: 'MntWines', 'NumStorePurchases',
+'Z_CostContact', 'Z_Revenue', 'ChildrenHome', 'Recency', 'Income_cat_enc',
+'Year_Old', 'NumCatalogPurchases', 'MntFishProducts', 'Education_enc' and
+'AcceptedCmpTotal'. These are the variables that will be used for all the
+models, testing with the rest of the variables that have been considered
+important as predictors on occasions but have been observed in the tests not to
+contribute to the prediction.
+
+Taking into account the sample size and trying to avoid as much overlap as
+possible, the parameters that make up each model have been varied in order to
+find the appropriate training and test sample size with the best results. Part
+of the results for each model can be found in the following table:
+
+| Model           | Accuracy | Precision | Recall | F1-Score | MSE   | MAE   | RMSE  | R^2^  | AUC   |
+|-----------------|----------|-----------|--------|----------|-------|-------|-------|-------|-------|
+| **Sw. Reg.**    |          |           |        |          |       |       |       | 0.304 |       |
+| **D. Trees**    |          |           |        |          | 0.105 | 0.199 | 0.209 |       |       |
+| **R. Forest**   | 0.90     | 0.773     | 0.31   | 0.44     | 0.098 | 0.098 | 0.312 | 0.902 | 0.85  |
+| **G. Boosting** | 0.884    | 0.737     | 0.389  | 0.509    | 0.116 | 0.116 | 0.341 | 0.884 | 0.83  |
+| **kNN**         | 0.821    | 0.343     | 0.167  | 0.224    | 0.179 | 0.179 | 0.423 | 0.821 |       |
+| **SVM**         | 0.87     | 0.682     | 0.224  | 0.337    | 0.134 | 0.134 | 0.366 | 0.866 | 0.83  |
+| **NN**          | 0.809    | 0.700     | 0.329  | 0.448    | 0.116 | 0.128 | 0.357 | 0.053 | 0.844 |
+
+Taking into account the above values, the Accuracy of all the models in general
+is noteworthy, exceeding 0.8 to 0.9, with the higher values being closer to 1
+being better. On the other hand, a high R2 coefficient has also been obtained
+in Random Forest, Gradient Boosting, kNN and SVM, indicating how the model fits
+the data, being the explained variability of these.
+
+In addition, the importance of the characteristics for the predictions will be
+taken into account, reflecting which customer variables would be the most
+important according to the analyses for the decision to accept or not the next
+campaign. The following table lists the most important characteristics and
+their level of importance:
+
+| Característica          | D. Trees | R. Forest | G. Boosting | SVM     |
+|-------------------------|----------|-----------|-------------|---------|
+| **AcceptedCmpTotal**    | 0.656903 | 0.263579  | 0.351229    | 0.6952  |
+| **Recency**             | 0.237129 | 0.170859  | 0.190092    | -0.0099 |
+| **MntWines**            | 0.058948 | 0.152675  | 0.103166    | 0.0002  |
+| **NumCatalogPurchases** | 0.047021 | 0.081172  | 0.082730    | 0.0421  |
+| **NumStorePurchases**   | 0\.      | 0.072055  | 0.085088    | -0.0699 |
+| **Year_Old**            | 0\.      | 0.071732  | 0.055492    | -0.0032 |
+
+It can be seen that consistently the most important characteristic to take into
+account in the prediction is 'AcceptedCmpTotal' or the total number of
+campaigns accepted by the customer. It is followed by 'Recency' or time elapsed
+since last purchase, 'MntWines' or money spent on wines, and
+'NumCatalogPurchases' as the number of purchases through the catalogue. The
+importance of these last three follows the same order except for catalogue
+purchases, which in Gradient Boosting is exceeded by in-store purchases, but
+only by 0.002. Likewise, the importance values are very low except for the
+total number of campaigns accepted, which ranges between 0.26 and 0.69.
+
+Before going into detail with the most relevant models, all analyses are
+developed in the jupyter Notebook 04_predictive.ipynb.
+
+## Featured models
+
+### Random Forest
+
+Random Forest with the sample used is the model with the highest accuracy and
+R2 coefficient of determination for the prediction of 'Response'. Its confusion
+matrix shows that 0.3 of the predictions are True Positive and 0.01 False
+Positive, while True Negative is 0.98 and False Negative is 0.69. Relative to
+the above, the Area Under the Curve (AUC) of the ROC curve is 0.85, showing how
+likely the model is to get the classification correct.
+
+Random Forest feature significance: ![](images/clipboard-2435151577.png)
+
+In the total test sample of 441 customers for Random Forest, 55 of them were
+the ones who accepted the next campaign. We obtain a recall of 0.31 and
+precision of 0.77, being the ability to detect true positives and the
+proportion of correct predictions in overall respectively.
+
+Decision tree for Random Forest: ![](images/clipboard-1976038787.png)
+
+### Gradient Boosting
+
+With Gradient Boosting in accuracy, lower values are obtained for accuracy and
+R2 (0.88; 0.88), but also the prediction seems to be more accurate, obtaining
+an F1-score value of 0.50 compared to 0.44 for the Random forest, showing that
+recall and accuracy are more balanced. The recall in this case is higher, at
+0.40, while the precision decreases to 0.69. It is reflected in the confusion
+matrix that True Positive and False Positive are 0.40 and 0.038 respectively,
+while True Negative and False Negative are 0.96 and 0.59.
+
+Importance of features according to Gradient Boosting (XGBoost):
+![](images/clipboard-452312388.png)
+
+Importance of features according to Gradient Boosting
+(GradientBoostingClassifier): ![](images/clipboard-3667380716.png)
+
+Decision tree for Gradient Boosting: ![](images/clipboard-209707449.png)
+
+# Conclusions
 
 Starting with the relationships, it is generally observed that those with
 higher incomes spend the most. It can also be seen that customers spend the
@@ -1645,8 +1786,51 @@ most on wine and meat products, in general buying through the catalogue. If we
 focus on those people who have accepted a campaign (Group_Y onwards), the more
 children they have at home, the less they consume, with the exception of offers
 whose relationship is higher than that of the group of people who did not
-accept campaigns (Group_N) (r=0.65; r=0.38). 
+accept campaigns (Group_N) (r=0.65; r=0.38).
 
-It might be appropriate to focus the selection of customers for future campaigns on those with higher incomes (therefore, those who spend more) and who buy online. Also, if the subject of the campaign is wine, there could be more loyal customers from previous campaigns who would be encouraged to repeat. It would be possible to attract the attention of people who do not usually accept campaigns if the campaign is oriented towards children or related products. 
+It might be appropriate to focus the selection of customers for future
+campaigns on those with higher incomes (therefore, those who spend more) and
+who buy online. Also, if the subject of the campaign is wine, there could be
+more loyal customers from previous campaigns who would be encouraged to repeat.
+It would be possible to attract the attention of people who do not usually
+accept campaigns if the campaign is oriented towards children or related
+products.
+
+Considering the models for predicting consumer behaviour and thus selecting the
+customers most likely to purchase the offer for the next campaign, it can be
+seen that the results are not very encouraging. Although the accuracy value for
+the models is high, when evaluating the confusion matrix and other metrics such
+as precision or recall, it can be seen that they do not have a high percentage
+of hits, although those that do have are unlikely to be false positives.
+
+On the other hand, for both Random Forest and Gradient Boosting, thanks to the
+confusion matrix that reflects the probability of true and false positives, it
+can be observed that in both models, although the probability of finding a
+positive is low (0.3 or 0.4 respectively), when it is achieved, it is very
+likely to be a true positive, since false positives have a low probability
+(0.01 and 0.03 respectively). The opposite happens when the result is negative,
+that although it is very likely to be a true negative, the false negatives
+outweigh the chance.
+
+If, hypothetically speaking, when choosing the customers most likely to accept
+the campaign, we manage to locate that 0.3 of true positives, it would already
+be an improvement on the results of the sample in the pilot campaign, which had
+a success rate of 15%. For this purpose, decision trees were obtained for both
+models.
+
+To exemplify the decision making of potential customers, taking into account
+the Random Forest decision tree, the customers most likely to accept the next
+campaign would be those who have in 'Recency' a value between 24.5-94.5, of
+these who in 'MntWines' have spent less than 895 and then accepted less than 3
+campaigns or in 'NumCatalogPurchases' preferably have a value higher than 3.5.
+One could filter by these specifications in the given variables to obtain a
+sample of customers to contact.
+
+Finally, the main limitation is the size of the sample (2240), especially for
+making predictions, since, as mentioned above, only a small part of the
+customers accepted a campaign in this pilot sample. In the future, if a new
+campaign is implemented with its respective customer registration, the sample
+can be used to further train the models and achieve a more confident
+prediction.
 
 # References
