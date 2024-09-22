@@ -1,4 +1,5 @@
-# ifood - Data Analyst Test
+# Campaign Acceptance Data Analysis
+## ifood - Data Analyst Test
 
 In this repository you can find the development of the Data Analyst Test for iFood as a personal project. 
 
